@@ -1,4 +1,4 @@
-# Agentic Chatbot Framework
+# Veterinary AI Assistant
 
 Multi-agent chatbot using CrewAI, FastAPI, and Streamlit.
 
