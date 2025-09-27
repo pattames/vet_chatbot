@@ -19,7 +19,7 @@ embedding_function = SentenceTransformerEmbeddingFunction(
 # Create or get collection in ChromaDB
 # The embedding function will be used when adding documents
 collection = chroma_client.get_or_create_collection(
-   name="company_policies",
+   name="veterinary_knowledge",
    embedding_function=embedding_function
 )
 
