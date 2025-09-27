@@ -13,7 +13,7 @@ chroma_client = chromadb.PersistentClient(path=DB_PATH)
 
 # Use Sentence Transformers embedding function
 embedding_function = SentenceTransformerEmbeddingFunction(
-   model_name="all-Mini"
+   model_name="intfloat/multilingual-e5-base"
 )
 
 # Create or get collection in ChromaDB
@@ -24,7 +24,9 @@ collection = chroma_client.get_or_create_collection(
 )
 
 # KNOWLEDGE_BASE
- 
+KNOWLEDGE_BASE = {
+   
+}
 
 if __name__ == "__main__":
    print("tests:")
