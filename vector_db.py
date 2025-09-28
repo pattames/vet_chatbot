@@ -91,6 +91,37 @@ def reset_collection(): # Use when modified knowledge base, changed embedding mo
     except Exception as e:
         logger.info(f"Collection doesn't exist or couldn't be deleted: {e}")
 
+def query_knowledge(query: str) -> str:
+   """Query VectorDB for Veterinary Knowledge"""
+   logger.info(f"Searching Unified Knowledge Base for query: \"{query}\" matches")
+
+   try:
+      # Vector similarity search
+      # Compares the query embeddings to the collections values embeddings
+      # Returns most similar values
+      results = collection.query(
+         query_texts=[query],
+         n_results=3, # Return top 3 values, even if not relevant (adjustable)
+         include=["metadatas", "distances"] # Include id's (default), metadatas and distances in results
+      )
+
+      # Check for valid results
+      if not results or not results.get("metadatas") or not results["metadatas"][0]:
+         return "No relevant knowledge found."
+
+      # Check unfiltered results
+      for metadata in results["metadatas"][0]:
+         print(metadata.get("knowledge_key", ""))
+
+      # logger.info(f"Vector search results for query: {query}")
+      # Results that pass similarity threshold
+      filtered_knowledge = []
+      # Process results to meet quality
+      # for i, metadata in enumerate()
+   except Exception as e: # Catch any errors during search
+      logger.error(f"Error querying knowledge: {str(e)}")
+      return "An error occured while looking for knowledge"
+
 if __name__ == "__main__":
    # Optional: Reset collection for fresh start (also delete folder inside vector_db):
    # reset_collection()
@@ -99,4 +130,7 @@ if __name__ == "__main__":
    # print(collection.get())
 
    # Create collection and index Veterinary Knowledge
-   insert_knowledge()
+   # insert_knowledge()
+
+   #Check unfiltered knowledge
+   query_knowledge("es urgente si tiene el abdomen hinchado?")
