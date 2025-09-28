@@ -55,6 +55,44 @@ KNOWLEDGE_BASE = {
     Analgesia: Meloxicam 0.2mg/kg IV/SC (una vez).""",
 }
 
+def insert_knowledge():
+   """Store all Veterinary Knowledge in ChromaDB"""
+   logger.info("\nIndexing Veterinary Knowledge into Unified Knowledge Base...")
+
+   # Grab all existing IDs to avoid duplicates ahead
+   existing_docs = collection.get()
+   existing_ids = set(existing_docs.get("ids", []))
+
+   for key, value in KNOWLEDGE_BASE.items():
+      # Safe insertion
+      try:
+         # Skip document if it already exists (avoids duplicates)
+         if key in existing_ids:
+            logger.info(f"Knowledge already exists: {key}, skipping...")
+            continue # Jump to the next iteration (code below doesn't execute for this iteration)
+
+         collection.add(
+            ids=[key],
+            documents=[value], # Used for embedding and search
+            metadatas=[{"knowledge_key": key, "knowledge_content": value}] # Used for retrieval
+         )
+         logger.info(f"Stored knowledge: {key} → {value[:50]}...")
+
+      except Exception as e: # Catch any exception that happens during insertion
+         logger.error(f"Error inserting knowledge {key}: {str(e)}")
+
+# Utility to reset collection
+def reset_collection(): # Use when modified knowledge base, changed embedding model or testing fresh installs
+    """Utility function to reset the collection if needed."""
+    try:
+        chroma_client.delete_collection("veterinary_knowledge")
+        logger.info("Collection deleted successfully.")
+    except Exception as e:
+        logger.info(f"Collection doesn't exist or couldn't be deleted: {e}")
 
 if __name__ == "__main__":
-   print("tests:")
+   # Optional: Reset collection for fresh start:
+   # reset_collection()
+   
+   # Create collection and index Veterinary Knowledge
+   insert_knowledge()
