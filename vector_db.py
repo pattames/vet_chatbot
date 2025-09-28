@@ -1,4 +1,5 @@
 import os
+import shutil
 import chromadb
 from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
 import logging
@@ -85,14 +86,17 @@ def insert_knowledge():
 def reset_collection(): # Use when modified knowledge base, changed embedding model or testing fresh installs
     """Utility function to reset the collection if needed."""
     try:
-        chroma_client.delete_collection("veterinary_knowledge")
+        shutil.rmtree(DB_PATH)
         logger.info("Collection deleted successfully.")
     except Exception as e:
         logger.info(f"Collection doesn't exist or couldn't be deleted: {e}")
 
 if __name__ == "__main__":
-   # Optional: Reset collection for fresh start:
+   # Optional: Reset collection for fresh start (also delete folder inside vector_db):
    # reset_collection()
-   
+
+   # Check collection
+   # print(collection.get())
+
    # Create collection and index Veterinary Knowledge
    insert_knowledge()
