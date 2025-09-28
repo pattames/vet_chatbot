@@ -110,14 +110,22 @@ def query_knowledge(query: str) -> str:
          return "No relevant knowledge found."
 
       # Check unfiltered results
-      for metadata in results["metadatas"][0]:
-         print(metadata.get("knowledge_key", ""))
+      # for metadata in results["metadatas"][0]:
+      #    print(metadata.get("knowledge_key", ""))
 
-      # logger.info(f"Vector search results for query: {query}")
+      logger.info(f"Vector search results for query: {query}")
       # Results that pass similarity threshold
       filtered_knowledge = []
       # Process results to meet quality
-      # for i, metadata in enumerate()
+      for i, metadata in enumerate(results["metadatas"][0]):
+         # Get distance (lower is better for L2 distance)
+         try:
+            distance = results["distances"][0][i]
+         except (IndexError, KeyError, TypeError):
+            distance = float("inf") # If error, set distance to infinity (will fail threshold)
+
+
+
    except Exception as e: # Catch any errors during search
       logger.error(f"Error querying knowledge: {str(e)}")
       return "An error occured while looking for knowledge"
