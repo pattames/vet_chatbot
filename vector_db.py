@@ -56,6 +56,7 @@ KNOWLEDGE_BASE = {
     Analgesia: Meloxicam 0.2mg/kg IV/SC (una vez).""",
 }
 
+# Populate database with all veterinary knowledge
 def insert_knowledge():
    """Store all Veterinary Knowledge in ChromaDB"""
    logger.info("\nIndexing Veterinary Knowledge into Unified Knowledge Base...")
@@ -82,15 +83,7 @@ def insert_knowledge():
       except Exception as e: # Catch any exception that happens during insertion
          logger.error(f"Error inserting knowledge {key}: {str(e)}")
 
-# Utility to reset collection
-def reset_collection(): # Use when modified knowledge base, changed embedding model or testing fresh installs
-    """Utility function to reset the collection if needed."""
-    try:
-        shutil.rmtree(DB_PATH)
-        logger.info("Collection deleted successfully.")
-    except Exception as e:
-        logger.info(f"Collection doesn't exist or couldn't be deleted: {e}")
-
+# Function to compare query to collection's values and return matching knowledge
 def query_knowledge(query: str) -> str:
    """Query VectorDB for Veterinary Knowledge"""
    logger.info(f"Searching Unified Knowledge Base for query: \"{query}\" matches")
@@ -124,7 +117,7 @@ def query_knowledge(query: str) -> str:
          except (IndexError, KeyError, TypeError):
             distance = float("inf") # If error, set distance to infinity (will fail threshold)
 
-      # Get metadata key and content (handle in case it's None or malformed)
+      # Get metadata's key and content (handle in case it's None or malformed)
       if metadata and isinstance(metadata, dict):
          knowledge_content = metadata.get("knowledge_content", "")
          knowledge_key = metadata.get("knowledge_key", "")
@@ -132,13 +125,21 @@ def query_knowledge(query: str) -> str:
          knowledge_content = ""
          knowledge_key = ""
          logger.warning(f"Invalid metadata at index {i}: {metadata}")
-         
 
          print(distance)
 
    except Exception as e: # Catch any errors during search
       logger.error(f"Error querying knowledge: {str(e)}")
       return "An error occured while looking for knowledge"
+
+# Utility to reset collection
+def reset_collection(): # Use when modified knowledge base, changed embedding model or testing fresh installs
+    """Utility function to reset the collection if needed."""
+    try:
+        shutil.rmtree(DB_PATH)
+        logger.info("Collection deleted successfully.")
+    except Exception as e:
+        logger.info(f"Collection doesn't exist or couldn't be deleted: {e}")
 
 if __name__ == "__main__":
    # Optional: Reset collection for fresh start (also delete folder inside vector_db):
