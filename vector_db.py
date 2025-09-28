@@ -124,7 +124,17 @@ def query_knowledge(query: str) -> str:
          except (IndexError, KeyError, TypeError):
             distance = float("inf") # If error, set distance to infinity (will fail threshold)
 
+      # Get metadata key and content (handle in case it's None or malformed)
+      if metadata and isinstance(metadata, dict):
+         knowledge_content = metadata.get("knowledge_content", "")
+         knowledge_key = metadata.get("knowledge_key", "")
+      else:
+         knowledge_content = ""
+         knowledge_key = ""
+         logger.warning(f"Invalid metadata at index {i}: {metadata}")
+         
 
+         print(distance)
 
    except Exception as e: # Catch any errors during search
       logger.error(f"Error querying knowledge: {str(e)}")
