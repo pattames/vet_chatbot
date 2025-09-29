@@ -126,7 +126,12 @@ def query_knowledge(query: str) -> str:
             knowledge_key = ""
             logger.warning(f"Invalid metadata at index {i}: {metadata}")
 
-         print(knowledge_key, distance)
+         # Filter
+         if distance < 0.7: # Adjustable threshold
+            filtered_knowledge.append(knowledge_content)
+            logger.info(f"   ✓ Match {i+1} [{knowledge_key}]: {knowledge_content[:50]}... (Distance: {distance:.3f})")
+         else:
+            logger.info(f"   ✗ Weak Match {i+1} [{knowledge_key}]: {knowledge_content[:50]}... (Distance: {distance:.3f})")
 
    except Exception as e: # Catch any errors during search
       logger.error(f"Error querying knowledge: {str(e)}")
