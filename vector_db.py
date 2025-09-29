@@ -106,8 +106,8 @@ def query_knowledge(query: str) -> str:
       # for metadata in results["metadatas"][0]:
       #    print(metadata.get("knowledge_key", ""))
 
-      logger.info(f"Vector search results for query: {query}")
       # Results that pass similarity threshold
+      logger.info(f"Vector search results for query: {query}")
       filtered_knowledge = []
       # Process results to meet quality
       for i, metadata in enumerate(results["metadatas"][0]):
@@ -117,16 +117,16 @@ def query_knowledge(query: str) -> str:
          except (IndexError, KeyError, TypeError):
             distance = float("inf") # If error, set distance to infinity (will fail threshold)
 
-      # Get metadata's key and content (handle in case it's None or malformed)
-      if metadata and isinstance(metadata, dict):
-         knowledge_content = metadata.get("knowledge_content", "")
-         knowledge_key = metadata.get("knowledge_key", "")
-      else:
-         knowledge_content = ""
-         knowledge_key = ""
-         logger.warning(f"Invalid metadata at index {i}: {metadata}")
+         # Get metadata's key and content (handle in case it's None or malformed)
+         if metadata and isinstance(metadata, dict):
+            knowledge_content = metadata.get("knowledge_content", "")
+            knowledge_key = metadata.get("knowledge_key", "")
+         else:
+            knowledge_content = ""
+            knowledge_key = ""
+            logger.warning(f"Invalid metadata at index {i}: {metadata}")
 
-         print(distance)
+         print(knowledge_key, distance)
 
    except Exception as e: # Catch any errors during search
       logger.error(f"Error querying knowledge: {str(e)}")
