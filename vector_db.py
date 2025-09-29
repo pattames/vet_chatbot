@@ -21,7 +21,8 @@ embedding_function = SentenceTransformerEmbeddingFunction(
 # The embedding function will be used when adding documents
 collection = chroma_client.get_or_create_collection(
    name="veterinary_knowledge",
-   embedding_function=embedding_function
+   embedding_function=embedding_function,
+   metadata={"hnsw:space": "cosine"} # Use Cosine Distance instead of default L2 distance (better for semantic similarity)
 )
 
 # KNOWLEDGE_BASE
@@ -127,7 +128,7 @@ def query_knowledge(query: str) -> str:
             logger.warning(f"Invalid metadata at index {i}: {metadata}")
 
          # Filter (very strict threshold because of very small knowledge base)
-         if distance < 0.2: # Adjustable threshold (make it wider as knowledgebase expands)
+         if distance < 0.2: # Adjustable threshold (make it less strict as knowledgebase expands)
             filtered_knowledge.append(knowledge_content)
             logger.info(f"   ✓ Match {i+1} [{knowledge_key}]: {knowledge_content[:50]}... (Distance: {distance:.3f})")
          else:
