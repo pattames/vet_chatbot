@@ -14,7 +14,7 @@ chroma_client = chromadb.PersistentClient(path=DB_PATH)
 
 # Use Sentence Transformers embedding function
 embedding_function = SentenceTransformerEmbeddingFunction(
-   model_name="intfloat/multilingual-e5-base" # Keep checking if it's accurate enough
+   model_name="BSC-NLP4BIA/SapBERT-from-roberta-base-biomedical-clinical-es" # Biomedical pretrained language model for Spanish
 )
 
 # Create or get collection in ChromaDB
@@ -128,7 +128,7 @@ def query_knowledge(query: str) -> str:
             logger.warning(f"Invalid metadata at index {i}: {metadata}")
 
          # Filter (very strict threshold because of very small knowledge base)
-         if distance < 0.2: # Adjustable threshold (make it less strict as knowledgebase expands)
+         if distance < 0.15: # Adjustable threshold (make it less strict as knowledgebase expands)
             filtered_knowledge.append(knowledge_content)
             logger.info(f"   ✓ Match {i+1} [{knowledge_key}]: {knowledge_content[:50]}... (Distance: {distance:.3f})")
          else:
