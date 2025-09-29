@@ -126,8 +126,8 @@ def query_knowledge(query: str) -> str:
             knowledge_key = ""
             logger.warning(f"Invalid metadata at index {i}: {metadata}")
 
-         # Filter
-         if distance < 0.7: # Adjustable threshold
+         # Filter (very strict threshold because of very small knowledge base)
+         if distance < 0.2: # Adjustable threshold (make it wider as knowledgebase expands)
             filtered_knowledge.append(knowledge_content)
             logger.info(f"   ✓ Match {i+1} [{knowledge_key}]: {knowledge_content[:50]}... (Distance: {distance:.3f})")
          else:
@@ -157,4 +157,4 @@ if __name__ == "__main__":
    # insert_knowledge()
 
    #Check unfiltered knowledge
-   query_knowledge("distensión abdominal arcadas")
+   query_knowledge("Tengo ganas de jugar videojuegos")
