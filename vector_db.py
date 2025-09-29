@@ -152,4 +152,4 @@ if __name__ == "__main__":
    # insert_knowledge()
 
    #Check unfiltered knowledge
-   query_knowledge("es urgente si tiene el abdomen hinchado?")
+   query_knowledge("distensión abdominal arcadas")
