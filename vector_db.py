@@ -1,4 +1,5 @@
 import os
+import shutil
 import chromadb
 from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
 import logging
@@ -55,6 +56,7 @@ KNOWLEDGE_BASE = {
     Analgesia: Meloxicam 0.2mg/kg IV/SC (una vez).""",
 }
 
+# Populate database with all veterinary knowledge
 def insert_knowledge():
    """Store all Veterinary Knowledge in ChromaDB"""
    logger.info("\nIndexing Veterinary Knowledge into Unified Knowledge Base...")
@@ -81,18 +83,73 @@ def insert_knowledge():
       except Exception as e: # Catch any exception that happens during insertion
          logger.error(f"Error inserting knowledge {key}: {str(e)}")
 
+# Function to compare query to collection's values and return matching knowledge
+def query_knowledge(query: str) -> str:
+   """Query VectorDB for Veterinary Knowledge"""
+   logger.info(f"Searching Unified Knowledge Base for query: \"{query}\" matches")
+
+   try:
+      # Vector similarity search
+      # Compares the query embeddings to the collections values embeddings
+      # Returns most similar values
+      results = collection.query(
+         query_texts=[query],
+         n_results=3, # Return top 3 values, even if not relevant (adjustable)
+         include=["metadatas", "distances"] # Include id's (default), metadatas and distances in results
+      )
+
+      # Check for valid results
+      if not results or not results.get("metadatas") or not results["metadatas"][0]:
+         return "No relevant knowledge found."
+
+      # Check unfiltered results
+      # for metadata in results["metadatas"][0]:
+      #    print(metadata.get("knowledge_key", ""))
+
+      # Results that pass similarity threshold
+      logger.info(f"Vector search results for query: {query}")
+      filtered_knowledge = []
+      # Process results to meet quality
+      for i, metadata in enumerate(results["metadatas"][0]):
+         # Get distance (lower is better for L2 distance)
+         try:
+            distance = results["distances"][0][i]
+         except (IndexError, KeyError, TypeError):
+            distance = float("inf") # If error, set distance to infinity (will fail threshold)
+
+         # Get metadata's key and content (handle in case it's None or malformed)
+         if metadata and isinstance(metadata, dict):
+            knowledge_content = metadata.get("knowledge_content", "")
+            knowledge_key = metadata.get("knowledge_key", "")
+         else:
+            knowledge_content = ""
+            knowledge_key = ""
+            logger.warning(f"Invalid metadata at index {i}: {metadata}")
+
+         print(knowledge_key, distance)
+
+   except Exception as e: # Catch any errors during search
+      logger.error(f"Error querying knowledge: {str(e)}")
+      return "An error occured while looking for knowledge"
+
 # Utility to reset collection
 def reset_collection(): # Use when modified knowledge base, changed embedding model or testing fresh installs
     """Utility function to reset the collection if needed."""
     try:
-        chroma_client.delete_collection("veterinary_knowledge")
+        shutil.rmtree(DB_PATH)
         logger.info("Collection deleted successfully.")
     except Exception as e:
         logger.info(f"Collection doesn't exist or couldn't be deleted: {e}")
 
 if __name__ == "__main__":
-   # Optional: Reset collection for fresh start:
+   # Optional: Reset collection for fresh start (also delete folder inside vector_db):
    # reset_collection()
-   
+
+   # Check collection
+   # print(collection.get())
+
    # Create collection and index Veterinary Knowledge
-   insert_knowledge()
+   # insert_knowledge()
+
+   #Check unfiltered knowledge
+   query_knowledge("distensión abdominal arcadas")
