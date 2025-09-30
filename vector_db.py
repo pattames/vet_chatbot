@@ -176,7 +176,7 @@ def query_knowledge(query: str) -> str:
       # Returns most similar values
       results = collection.query(
          query_texts=[f"query: {query}"], # Prefix for E5 model usage
-         n_results=3, # Return top 3 values, even if not relevant (adjustable)
+         n_results=5, # Return top 3 values, even if not relevant (adjustable)
          include=["metadatas", "distances"] # Include id's (default), metadatas and distances in results
       )
 
@@ -238,5 +238,75 @@ if __name__ == "__main__":
    # Create collection and index Veterinary Knowledge
    insert_knowledge()
 
-   #Check
-   query_knowledge("Mi perro tiene el abdomen distendido y está intentando vomitar sin éxito")
+   # TESTING QUERIES
+   queries = [
+      # Direct disease/condition queries
+      "¿Qué es el parvovirus canino?",  # Expected: parvovirus_canino
+      "Información sobre ehrlichiosis en perros",  # Expected: ehrlichiosis_canina
+      "Mi perro tiene diabetes, ¿qué hago?",  # Expected: diabetes_mellitus_canina
+      "¿Qué es la torsión gástrica?",  # Expected: gvd_torsion_gastrica
+      
+      # Symptom-based queries
+      "Perro con vómitos severos y diarrea con sangre",  # Expected: parvovirus_canino
+      "Mi perro tiene el abdomen distendido y está intentando vomitar sin éxito",  # Expected: gvd_torsion_gastrica
+      "Perro con mucha sed, orina mucho y está perdiendo peso",  # Expected: diabetes_mellitus_canina OR enfermedad_renal_cronica
+      "Gato senior con vómitos y mal aliento",  # Expected: enfermedad_renal_cronica
+      "Perro con picazón intensa en patas y orejas",  # Expected: dermatitis_atopica_canina
+      "Bulldog con dificultad para respirar y ruidos al respirar",  # Expected: sindrome_braquicefalico
+      "Perro con cojera en pata trasera que no apoya",  # Expected: ruptura_ligamento_cruzado
+      
+      # Emergency/toxicity queries
+      "Mi perro comió chocolate, ¿es peligroso?",  # Expected: intoxicacion_chocolate
+      "Emergencia: perro con abdomen hinchado y shock",  # Expected: gvd_torsion_gastrica
+      "Perro braquicéfalo con crisis respiratoria",  # Expected: sindrome_braquicefalico
+      
+      # Treatment/protocol queries
+      "Protocolo de anestesia para cirugía en perro sano",  # Expected: protocolo_anestesia_canino_sano
+      "¿Cómo se trata la ehrlichiosis?",  # Expected: ehrlichiosis_canina
+      "Tratamiento para parvovirus en cachorros",  # Expected: parvovirus_canino
+      "¿Qué insulina uso para un perro diabético?",  # Expected: diabetes_mellitus_canina
+      "Manejo de enfermedad renal en gatos",  # Expected: enfermedad_renal_cronica
+      
+      # Diagnostic queries
+      "¿Cómo diagnostico ehrlichiosis?",  # Expected: ehrlichiosis_canina
+      "Pruebas para confirmar diabetes en perros",  # Expected: diabetes_mellitus_canina
+      "¿Qué test uso para parvovirus?",  # Expected: parvovirus_canino
+      
+      # Prognosis queries
+      "¿Cuál es el pronóstico de un perro con parvovirus?",  # Expected: parvovirus_canino
+      "¿Se recupera un perro con torsión gástrica?",  # Expected: gvd_torsion_gastrica
+      "Expectativa de vida gato con enfermedad renal",  # Expected: enfermedad_renal_cronica
+      
+      # Specific clinical signs
+      "Perro con fiebre y plaquetas bajas",  # Expected: ehrlichiosis_canina
+      "Perro con convulsiones después de comer algo",  # Expected: intoxicacion_chocolate
+      "Perro con prueba de cajón positiva",  # Expected: ruptura_ligamento_cruzado
+      
+      # Breed-specific queries
+      "Problemas respiratorios en bulldogs",  # Expected: sindrome_braquicefalico
+      "Cirugía para perros de nariz chata",  # Expected: sindrome_braquicefalico
+      
+      # Chronic management queries
+      "Dieta para perro diabético",  # Expected: diabetes_mellitus_canina
+      "Control de alergias cutáneas crónicas",  # Expected: dermatitis_atopica_canina
+      "Manejo de insuficiencia renal crónica",  # Expected: enfermedad_renal_cronica
+      
+      # Medication/dosage queries
+      "Dosis de doxiciclina para ehrlichiosis",  # Expected: ehrlichiosis_canina
+      "¿Cuánto carbón activado dar en intoxicación?",  # Expected: intoxicacion_chocolate
+      "Dosis de Apoquel para dermatitis",  # Expected: dermatitis_atopica_canina
+      
+      # Surgical queries
+      "Cirugía para ligamento cruzado roto",  # Expected: ruptura_ligamento_cruzado
+      "Gastropexia preventiva en perros grandes",  # Expected: gvd_torsion_gastrica
+      
+      # Edge cases / ambiguous queries
+      "Perro vomitando",  # Could match: parvovirus_canino, enfermedad_renal_cronica, intoxicacion_chocolate (may not pass threshold)
+      "Perro con dolor",  # Very vague - may not return good matches
+      "Problemas de piel en perros",  # Expected: dermatitis_atopica_canina
+   ]
+
+   for test_query in queries:
+      print(f"\n{'='*60}")
+      response = query_knowledge(test_query)
+      logger.info(f"Query: {test_query}\nResponse: {response}\n")
