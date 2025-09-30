@@ -3,6 +3,7 @@ import shutil
 import chromadb
 from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
 import logging
+from knowledge_base import KNOWLEDGE_BASE
 
 # Initialize Logging
 logging.basicConfig(level=logging.INFO)
@@ -24,38 +25,6 @@ collection = chroma_client.get_or_create_collection(
    embedding_function=embedding_function,
    metadata={"hnsw:space": "cosine"} # Use Cosine Distance instead of default L2 distance (better for semantic similarity)
 )
-
-# KNOWLEDGE_BASE
-KNOWLEDGE_BASE = {
-    # Enfermedades Infecciosas
-    "parvovirus_canino": """Gastroenteritis viral aguda. 
-    SÍNTOMAS: Vómitos severos, diarrea hemorrágica, deshidratación, leucopenia.
-    DIAGNÓSTICO: Test ELISA rápido en heces, PCR.
-    TRATAMIENTO: Soporte - fluidoterapia IV agresiva (90-120 ml/kg/día), 
-    antieméticos (maropitant 1mg/kg SC SID), antibióticos si leucopenia 
-    (ampicilina 20mg/kg IV TID), control dolor (buprenorfina 0.01-0.02mg/kg).
-    PRONÓSTICO: 70-90% supervivencia con tratamiento intensivo.""",
-    
-    "ehrlichiosis_canina": """Enfermedad rickettsial transmitida por Rhipicephalus sanguineus.
-    FASES: Aguda (2-4 sem), subclínica (meses-años), crónica.
-    SIGNOS: Fiebre, anorexia, linfadenopatía, trombocitopenia, anemia.
-    DIAGNÓSTICO: Serología (IFI, ELISA), PCR, visualización mórulas.
-    TRATAMIENTO: Doxiciclina 10mg/kg PO SID x 28 días.
-    PRONÓSTICO: Excelente si tratamiento temprano.""",
-    
-    # Urgencias
-    "gvd_torsion_gastrica": """Dilatación-vólvulo gástrico. EMERGENCIA QUIRÚRGICA.
-    PRESENTACIÓN: Distensión abdominal, arcadas improductivas, shock.
-    ESTABILIZACIÓN: Fluidoterapia shock (90ml/kg/hora), descompresión gástrica.
-    CIRUGÍA: Reposición gástrica + gastropexia preventiva.
-    MORTALIDAD: 15-33% incluso con tratamiento.""",
-    
-    # Protocolos Anestésicos
-    "protocolo_anestesia_canino_sano": """Pre-medicación: Acepromacina 0.02-0.05mg/kg + 
-    Morfina 0.2-0.5mg/kg IM. Inducción: Propofol 4-6mg/kg IV efecto.
-    Mantenimiento: Isoflurano 1-2% o Sevoflurano 2-3%.
-    Analgesia: Meloxicam 0.2mg/kg IV/SC (una vez).""",
-}
 
 # Populate database with all veterinary knowledge
 def insert_knowledge():
@@ -128,7 +97,7 @@ def query_knowledge(query: str) -> str:
             logger.warning(f"Invalid metadata at index {i}: {metadata}")
 
          # Filter (very strict threshold because of very small knowledge base)
-         if distance < 0.15: # Adjustable threshold (make it less strict as knowledgebase expands)
+         if distance < 0.17: # Adjustable threshold (make it less strict as knowledgebase expands)
             filtered_knowledge.append(knowledge_content)
             logger.info(f"   ✓ Match {i+1} [{knowledge_key}]: {knowledge_content[:50]}... (Distance: {distance:.3f})")
          else:
@@ -157,5 +126,5 @@ if __name__ == "__main__":
    # Create collection and index Veterinary Knowledge
    # insert_knowledge()
 
-   #Check unfiltered knowledge
-   query_knowledge("Distención abdominal")
+   #Check
+   query_knowledge("distensión abdominal arcadas")
