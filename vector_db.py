@@ -76,7 +76,7 @@ def insert_knowledge():
 
          collection.add(
             ids=[key],
-            documents=[value], # Used for embedding and search
+            documents=[f"passage: {value}"], # Used for embedding and search (With prefix for E5 model usage)
             metadatas=[{"knowledge_key": key, "knowledge_content": value}] # Used for retrieval
          )
          logger.info(f"Stored knowledge: {key} → {value[:50]}...")
@@ -94,7 +94,7 @@ def query_knowledge(query: str) -> str:
       # Compares the query embeddings to the collections values embeddings
       # Returns most similar values
       results = collection.query(
-         query_texts=[query],
+         query_texts=[f"query: {query}"], # Prefix for E5 model usage
          n_results=3, # Return top 3 values, even if not relevant (adjustable)
          include=["metadatas", "distances"] # Include id's (default), metadatas and distances in results
       )
@@ -158,4 +158,4 @@ if __name__ == "__main__":
    # insert_knowledge()
 
    #Check unfiltered knowledge
-   query_knowledge("Tengo ganas de jugar videojuegos")
+   query_knowledge("Distención abdominal")
