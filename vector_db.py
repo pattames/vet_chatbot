@@ -14,7 +14,7 @@ chroma_client = chromadb.PersistentClient(path=DB_PATH)
 
 # Use Sentence Transformers embedding function
 embedding_function = SentenceTransformerEmbeddingFunction(
-   model_name="intfloat/multilingual-e5-base" # Multilingual for spanish
+   model_name="paraphrase-multilingual-MiniLM-L12-v2" # Multilingual for spanish
 )
 
 # Create or get collection in ChromaDB
