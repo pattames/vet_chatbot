@@ -215,7 +215,7 @@ def query_knowledge(query: str) -> str:
          else:
             logger.info(f"   ✗ Weak Match {i+1} [{knowledge_key}]: {knowledge_content[:50]}... (Distance: {distance:.3f})")
 
-     # Format response based on number of filtered matches 
+      # Format response based on number of filtered matches 
       # If no strong filtered matches, return the best unfiltered match
       if not filtered_knowledge and results["metadatas"][0]:
          best_match = results["metadatas"][0][0].get("knowledge_content", "")
