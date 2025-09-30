@@ -25,155 +25,255 @@ collection = chroma_client.get_or_create_collection(
    metadata={"hnsw:space": "cosine"} # Use Cosine Distance instead of default L2 distance (better for semantic similarity)
 )
 
-# KNOWLEDGE_BASE
+# CHUNKED KNOWLEDGE BASE
 KNOWLEDGE_BASE = {
-    # Enfermedades Infecciosas
-    "parvovirus_canino": """Gastroenteritis viral aguda. 
-    SÍNTOMAS: Vómitos severos, diarrea hemorrágica, deshidratación, leucopenia.
-    DIAGNÓSTICO: Test ELISA rápido en heces, PCR.
-    TRATAMIENTO: Soporte intensivo - 
-    FLUIDOTERAPIA: 
-    - Shock resuscitation: 20-25 ml/kg bolus IV en 10-15 min, repetir según necesidad
-      (puede repetirse hasta 90 ml/kg/hora total hasta restaurar perfusión)
-    - Mantenimiento (post-estabilización): 48-72 ml/kg/día (2-3 ml/kg/hora), 
-      ajustar por pérdidas continuas
-    - Antieméticos: maropitant 1mg/kg SC SID
-    - Antibióticos si leucopenia severa: ampicilina 22mg/kg IV TID 
-      (o terapia combinada con aminoglucósidos en casos críticos)
-    - Control dolor: buprenorfina 0.01-0.02mg/kg IV/IM/SC
-    PRONÓSTICO: 70-90% supervivencia con tratamiento intensivo.""",
-    
-    "ehrlichiosis_canina": """Enfermedad rickettsial transmitida por Rhipicephalus sanguineus.
-    FASES: Aguda (2-4 sem), subclínica (meses-años), crónica.
-    SIGNOS: Fiebre, anorexia, linfadenopatía, trombocitopenia, anemia.
-    DIAGNÓSTICO: Serología (IFA/IFAT, ELISA), PCR, visualización mórulas.
-    TRATAMIENTO: Doxiciclina 10mg/kg PO SID x 28 días.
-    PRONÓSTICO: Excelente si tratamiento temprano.""",
-    
-    # Urgencias
-    "gvd_torsion_gastrica": """Dilatación-vólvulo gástrico. EMERGENCIA QUIRÚRGICA.
-    PRESENTACIÓN: Distensión abdominal, arcadas improductivas, shock.
-    ESTABILIZACIÓN FLUIDOTERAPIA: 
-    - Administrar en bolus incrementales de 10-20 ml/kg IV en 15-20 min
-    - Reevaluar parámetros de perfusión después de cada bolus
-    - Repetir bolus según necesidad (dosis total de shock = 90 ml/kg equivale 
-      al volumen sanguíneo, NO administrar por hora)
-    - Descompresión gástrica inmediata (orogástrica o trocarización)
-    CIRUGÍA: Reposición gástrica + gastropexia preventiva.
-    MORTALIDAD: 15-33% incluso con tratamiento.""",
-    
-    # Protocolos Anestésicos
-    "protocolo_anestesia_canino_sano": """Pre-medicación: Acepromacina 0.02-0.05mg/kg + 
-    Morfina 0.2-0.5mg/kg IM. 
-    Inducción: Propofol 4-6mg/kg IV efecto.
-    Mantenimiento: Isoflurano 1-2% o Sevoflurano 3-4% end-tidal (para profundidad 
-    quirúrgica; 2-3% puede ser adecuado con premedicación pesada y analgesia multimodal).
-    Analgesia: Meloxicam 0.2mg/kg IV/SC (dosis inicial DÍA 1 únicamente).
-    Mantenimiento analgésico (Día 2+): Meloxicam 0.1mg/kg PO SID.""",
+    # === PARVOVIRUS ===
+    "parvovirus_overview": {
+        "content": "PARVOVIRUS CANINO: Gastroenteritis viral aguda causada por el virus del parvovirus canino tipo 2. Afecta principalmente cachorros no vacunados. Alta contagiosidad vía fecal-oral.",
+        "category": "overview",
+        "disease": "parvovirus"
+    },
+    "parvovirus_symptoms": {
+        "content": "SÍNTOMAS PARVOVIRUS: Vómitos severos, diarrea hemorrágica (característica), deshidratación rápida, leucopenia marcada, fiebre o hipotermia, letargia severa, anorexia.",
+        "category": "symptoms",
+        "disease": "parvovirus"
+    },
+    "parvovirus_diagnosis": {
+        "content": "DIAGNÓSTICO PARVOVIRUS: Test ELISA rápido en heces (sensibilidad 80-90%), PCR fecal (más sensible), hemograma (leucopenia <2000), bioquímica (hipoproteinemia, electrolitos).",
+        "category": "diagnosis",
+        "disease": "parvovirus"
+    },
+    "parvovirus_treatment": {
+        "content": """TRATAMIENTO PARVOVIRUS: Soporte intensivo.
+        FLUIDOTERAPIA: Shock resuscitation 20-25 ml/kg bolus IV en 10-15 min, repetir según necesidad (hasta 90 ml/kg/hora). Post-estabilización: 48-72 ml/kg/día (2-3 ml/kg/hora).
+        Antieméticos: maropitant 1mg/kg SC SID.
+        Antibióticos si leucopenia severa: ampicilina 22mg/kg IV TID o terapia combinada con aminoglucósidos.
+        Control dolor: buprenorfina 0.01-0.02mg/kg IV/IM/SC.
+        PRONÓSTICO: 70-90% supervivencia con tratamiento intensivo.""",
+        "category": "treatment",
+        "disease": "parvovirus"
+    },
 
-    # Endocrinopatías
-    "diabetes_mellitus_canina": """Endocrinopatía por deficiencia absoluta o relativa de insulina.
-    SIGNOS CLÍNICOS: Poliuria, polidipsia, polifagia, pérdida de peso. 
-    Complicación: cetoacidosis diabética (emergencia).
-    DIAGNÓSTICO: Glucemia persistente elevada (frecuentemente >400mg/dl, aunque 
-    valores >250mg/dl con glucosuria persistente y signos clínicos son sugestivos), 
-    glucosuria persistente, fructosamina elevada.
-    TRATAMIENTO: INSULINA - Primera línea recomendada: 
-    - Lente porcina (Vetsulin): 0.25 UI/kg BID SC (más común en perros)
-    - NPH alternativa: 0.3-0.4 UI/kg BID SC
-    Ajustar según curva de glucosa (medir cada 2h por 12-24h).
-    DIETA: Alta fibra, horarios fijos. Hills w/d o Royal Canin Glycobalance.
-    MONITOREO: Curvas glucosa cada 1-2 semanas al inicio, luego cada 3-6 meses.
-    PRONÓSTICO: Bueno con manejo apropiado. Supervivencia media 2-3 años.""",
+    # === EHRLICHIOSIS ===
+    "ehrlichiosis_overview": {
+        "content": "EHRLICHIOSIS CANINA: Enfermedad rickettsial transmitida por la garrapata Rhipicephalus sanguineus. Tres fases: aguda (2-4 semanas), subclínica (meses-años), crónica.",
+        "category": "overview",
+        "disease": "ehrlichiosis"
+    },
+    "ehrlichiosis_symptoms": {
+        "content": "SÍNTOMAS EHRLICHIOSIS: Fiebre, anorexia, letargia, linfadenopatía, trombocitopenia (signo cardinal), anemia, epistaxis, petequias, hemorragias. Fase crónica: pancitopenia severa.",
+        "category": "symptoms",
+        "disease": "ehrlichiosis"
+    },
+    "ehrlichiosis_diagnosis": {
+        "content": "DIAGNÓSTICO EHRLICHIOSIS: Serología (IFA/IFAT, ELISA - puede tardar 7-21 días en positivizar), PCR (más sensible en fase aguda), hemograma (trombocitopenia, anemia), visualización de mórulas en monocitos (poco sensible).",
+        "category": "diagnosis",
+        "disease": "ehrlichiosis"
+    },
+    "ehrlichiosis_treatment": {
+        "content": "TRATAMIENTO EHRLICHIOSIS: Doxiciclina 10mg/kg PO SID durante 28 días (tratamiento de elección). Mejora clínica en 24-48 horas generalmente. PRONÓSTICO: Excelente si tratamiento temprano en fase aguda.",
+        "category": "treatment",
+        "disease": "ehrlichiosis"
+    },
 
-    # Dermatología
-    "dermatitis_atopica_canina": """Enfermedad alérgica cutánea crónica, predisposición genética.
-    SIGNOS: Prurito intenso (patas, axilas, ingles, orejas), eritema, 
-    liquenificación crónica, infecciones secundarias frecuentes.
-    EDAD: Inicio 6 meses - 3 años típicamente.
-    DIAGNÓSTICO: Por exclusión (descartar pulgas, sarna, alergias alimentarias).
-    Test intradérmico o IgE sérica para identificar alérgenos.
-    TRATAMIENTO: 
-    - Agudo: Prednisolona 0.5-1mg/kg PO en dosis única o dividida BID x 3-7 días
-    - Mantenimiento (elegir una opción):
-      * Ciclosporina 5mg/kg SID
-      * Oclacitinib (Apoquel): 0.4-0.6mg/kg BID por hasta 14 días (fase aguda),
-        luego 0.4-0.6mg/kg SID para mantenimiento a largo plazo
-      * Lokivetmab (Cytopoint): mínimo 2mg/kg SC cada 4-8 semanas 
-        (anticuerpo monoclonal anti-IL-31, inicia en 24h, sin restricción de edad)
-    - Baños semanales con shampoo hipoalergénico
-    - Inmunoterapia específica si alérgenos identificados (70% éxito).""",
+    # === GVD TORSIÓN GÁSTRICA ===
+    "gvd_overview": {
+        "content": "DILATACIÓN-VÓLVULO GÁSTRICO (GVD): EMERGENCIA QUIRÚRGICA. El estómago se dilata con gas y rota sobre su eje. Razas grandes de pecho profundo en mayor riesgo. Mortalidad 15-33% incluso con tratamiento.",
+        "category": "overview",
+        "disease": "gvd"
+    },
+    "gvd_symptoms": {
+        "content": "SÍNTOMAS GVD: Distensión abdominal marcada (timpanismo), arcadas improductivas (signo patognomónico), inquietud, sialorrea, shock (mucosas pálidas, pulso débil, TRC prolongado), dolor abdominal.",
+        "category": "symptoms",
+        "disease": "gvd"
+    },
+    "gvd_diagnosis": {
+        "content": "DIAGNÓSTICO GVD: Clínico (presentación característica), radiografías laterales (compartimentalización gástrica, signo de Snoopy), gasometría (acidosis metabólica), lactato elevado.",
+        "category": "diagnosis",
+        "disease": "gvd"
+    },
+    "gvd_treatment": {
+        "content": """TRATAMIENTO GVD: EMERGENCIA.
+        ESTABILIZACIÓN: Fluidoterapia shock (bolus 10-20 ml/kg IV en 15-20 min, reevaluar, repetir según necesidad - dosis total shock = 90 ml/kg).
+        Descompresión gástrica inmediata (orogástrica si posible, trocarización si necesario).
+        CIRUGÍA: Reposición gástrica + gastropexia preventiva (obligatoria).
+        Evaluar viabilidad gástrica y esplénica.""",
+        "category": "treatment",
+        "disease": "gvd"
+    },
 
-    # Nefrología
-    "enfermedad_renal_cronica": """Pérdida progresiva irreversible de función renal. 
-    Común en gatos senior. NOTA: Valores IRIS para GATOS.
-    ESTADIOS IRIS (GATOS): I (creatinina <1.6), II (1.6-2.8), III (2.9-5.0), IV (>5.0) mg/dl.
-    SIGNOS: PU/PD, anorexia, vómitos, pérdida peso, halitosis urémica.
-    DIAGNÓSTICO: Creatinina y BUN elevados, densidad urinaria <1.035 (perros) <1.040 (gatos),
-    proteinuria (UPC >0.5 perros, >0.4 gatos). Ecografía: riñones pequeños irregulares.
-    TRATAMIENTO SEGÚN ESTADIO:
-    - Fluidoterapia SC (100-150ml/gato cada 48h)
-    - Restricción fósforo: Dieta renal + quelantes (hidróxido aluminio 30-90mg/kg/día)
-    - Hipertensión: Amlodipino 0.625-1.25mg/gato SID
-    - Anemia: Eritropoyetina si Hct <20%
-    - Proteinuria: Telmisartan (primera línea, 2019 IRIS) o Benazepril 0.5-1.0mg/kg SID
-    PRONÓSTICO: Variable. Estadio II: años. Estadio IV: semanas-meses.""",
+    # === DIABETES MELLITUS ===
+    "diabetes_overview": {
+        "content": "DIABETES MELLITUS CANINA: Endocrinopatía por deficiencia absoluta o relativa de insulina. Más común en perros de mediana edad a senior. Complicación grave: cetoacidosis diabética.",
+        "category": "overview",
+        "disease": "diabetes"
+    },
+    "diabetes_symptoms": {
+        "content": "SÍNTOMAS DIABETES: Poliuria (PU), polidipsia (PD) - signos cardinales, polifagia con pérdida de peso, cataratas de rápida progresión, debilidad, infecciones urinarias recurrentes.",
+        "category": "symptoms",
+        "disease": "diabetes"
+    },
+    "diabetes_diagnosis": {
+        "content": "DIAGNÓSTICO DIABETES: Glucemia persistente elevada (frecuentemente >400mg/dl, aunque >250mg/dl con signos clínicos es sugestivo), glucosuria persistente, fructosamina elevada (refleja control de 2-3 semanas previas).",
+        "category": "diagnosis",
+        "disease": "diabetes"
+    },
+    "diabetes_treatment": {
+        "content": """TRATAMIENTO DIABETES: INSULINA primera línea.
+        Lente porcina (Vetsulin): 0.25 UI/kg BID SC (más común en perros).
+        NPH alternativa: 0.3-0.4 UI/kg BID SC.
+        Ajustar según curva de glucosa (medir cada 2h por 12-24h).
+        DIETA: Alta fibra, horarios fijos. Hills w/d o Royal Canin Glycobalance.
+        MONITOREO: Curvas glucosa cada 1-2 semanas al inicio, luego cada 3-6 meses.
+        PRONÓSTICO: Bueno con manejo apropiado. Supervivencia media 2-3 años.""",
+        "category": "treatment",
+        "disease": "diabetes"
+    },
 
-    # Respiratorio
-    "sindrome_braquicefalico": """Obstrucción vías aéreas superiores en razas braquicéfalas.
-    COMPONENTES: Estenosis narinas, paladar blando elongado, eversión sáculos laríngeos,
-    hipoplasia tráquea, colapso laríngeo.
-    SIGNOS: Respiración ruidosa, intolerancia ejercicio, cianosis, síncope, golpe de calor.
-    EMERGENCIA: Distrés respiratorio severo - 
-    - Sedación: butorfanol 0.2mg/kg IV/IM
-    - Oxígeno, enfriamiento activo si hipertermia
-    - Intubación si necesario
-    ESTABILIZACIÓN: 
-    - Dexametasona 0.1-0.2mg/kg IV
-    - Furosemida 2-4mg/kg IV si edema pulmonar (repetir cada 1-6h según necesidad 
-      en emergencias; 1-2mg/kg es dosis de mantenimiento, NO emergencia)
-    TRATAMIENTO DEFINITIVO: Cirugía correctiva - rinoplastia, estafilectomía, 
-    sacculectomía. Realizar temprano (6-12 meses ideal).
-    MANEJO: Evitar calor/estrés, mantener peso ideal, arnés no collar.
-    PRONÓSTICO: Excelente con cirugía temprana. Sin cirugía: deterioro progresivo.""",
+    # === DERMATITIS ATÓPICA ===
+    "dermatitis_atopica_overview": {
+        "content": "DERMATITIS ATÓPICA CANINA: Enfermedad alérgica cutánea crónica con predisposición genética. Respuesta de hipersensibilidad a alérgenos ambientales. Inicio típico: 6 meses - 3 años.",
+        "category": "overview",
+        "disease": "dermatitis_atopica"
+    },
+    "dermatitis_atopica_symptoms": {
+        "content": "SÍNTOMAS DERMATITIS ATÓPICA: Prurito intenso (patas, axilas, ingles, orejas, cara) - signo principal, eritema, liquenificación crónica, hiperpigmentación, infecciones secundarias frecuentes (bacterianas, Malassezia), aloecia.",
+        "category": "symptoms",
+        "disease": "dermatitis_atopica"
+    },
+    "dermatitis_atopica_diagnosis": {
+        "content": "DIAGNÓSTICO DERMATITIS ATÓPICA: Diagnóstico por exclusión (descartar pulgas, sarna sarcóptica/demodécica, alergias alimentarias). Test intradérmico o IgE sérica para identificar alérgenos específicos (para inmunoterapia).",
+        "category": "diagnosis",
+        "disease": "dermatitis_atopica"
+    },
+    "dermatitis_atopica_treatment": {
+        "content": """TRATAMIENTO DERMATITIS ATÓPICA:
+        Agudo: Prednisolona 0.5-1mg/kg PO SID/BID x 3-7 días.
+        Mantenimiento (elegir): Ciclosporina 5mg/kg SID, Oclacitinib (Apoquel) 0.4-0.6mg/kg BID x 14 días luego SID, Lokivetmab (Cytopoint) mínimo 2mg/kg SC cada 4-8 semanas.
+        Baños semanales con shampoo hipoalergénico.
+        Inmunoterapia específica si alérgenos identificados (70% éxito).""",
+        "category": "treatment",
+        "disease": "dermatitis_atopica"
+    },
 
-    # Toxicología
-    "intoxicacion_chocolate": """Toxicosis por teobromina/cafeína. Común en perros.
-    DOSIS TÓXICA: Teobromina >20mg/kg signos leves, >40mg/kg signos severos, >60mg/kg convulsiones.
-    Chocolate negro: ~14mg teobromina/g. Chocolate leche: ~2mg/g. Chocolate blanco: mínimo.
-    SIGNOS (4-12h post-ingesta): Vómitos, diarrea, PU/PD, hiperactividad, 
-    taquicardia, arritmias, temblores, convulsiones.
-    TRATAMIENTO:
-    - <2h ingesta: Inducir vómito (apomorfina 0.04mg/kg IV o conjuntival)
-    - Carbón activado: PROTOCOLO 2025 ACTUALIZADO:
-      * Exposición leve-moderada (<60mg/kg): 1-2g/kg PO dosis única
-      * Exposición severa/letal (>60mg/kg): 1-2g/kg PO, puede repetirse cada 
-        4-6h x 24h SOLO en casos graves (la teobromina recircula, pero dosis 
-        múltiples aumentan riesgo de hipernatremia por alto contenido de azúcar)
-    - Fluidoterapia IV para promover eliminación
-    - Taquicardia severa: Propranolol 0.02-0.06mg/kg IV lento
-    - Convulsiones: Diazepam 0.5-1mg/kg IV
-    - Monitoreo ECG continuo si >40mg/kg ingerido
-    PRONÓSTICO: Excelente con tratamiento temprano. Muerte rara pero posible >100mg/kg.""",
+    # === ENFERMEDAD RENAL CRÓNICA ===
+    "renal_cronica_overview": {
+        "content": "ENFERMEDAD RENAL CRÓNICA (ERC): Pérdida progresiva irreversible de función renal. Muy común en gatos senior. Estadios IRIS I-IV según creatinina. Manejo paliativo, no curativo.",
+        "category": "overview",
+        "disease": "renal_cronica"
+    },
+    "renal_cronica_symptoms": {
+        "content": "SÍNTOMAS ERC: Poliuria/polidipsia (PU/PD) - signos tempranos, anorexia, vómitos, pérdida de peso progresiva, halitosis urémica, letargia, úlceras orales en estadios avanzados.",
+        "category": "symptoms",
+        "disease": "renal_cronica"
+    },
+    "renal_cronica_diagnosis": {
+        "content": "DIAGNÓSTICO ERC: Creatinina y BUN elevados (creatinina más específica), densidad urinaria baja (<1.035 perros, <1.040 gatos) - isostenuria, proteinuria (UPC >0.5 perros, >0.4 gatos), ecografía (riñones pequeños, irregulares, pérdida diferenciación corticomedular). ESTADIOS IRIS GATOS: I (<1.6), II (1.6-2.8), III (2.9-5.0), IV (>5.0) mg/dl creatinina.",
+        "category": "diagnosis",
+        "disease": "renal_cronica"
+    },
+    "renal_cronica_treatment": {
+        "content": """TRATAMIENTO ERC:
+        Fluidoterapia SC (100-150ml/gato cada 48h).
+        Restricción fósforo: Dieta renal + quelantes (hidróxido aluminio 30-90mg/kg/día).
+        Hipertensión: Amlodipino 0.625-1.25mg/gato SID.
+        Anemia: Eritropoyetina si Hct <20%.
+        Proteinuria: Telmisartan (primera línea 2019 IRIS) o Benazepril 0.5-1.0mg/kg SID.
+        PRONÓSTICO: Variable. Estadio II: años. Estadio IV: semanas-meses.""",
+        "category": "treatment",
+        "disease": "renal_cronica"
+    },
 
-    # Ortopedia
-    "ruptura_ligamento_cruzado": """Causa más común de cojera miembro posterior en perros.
-    PRESENTACIÓN: Cojera aguda o crónica progresiva, apoyo parcial o nulo,
-    inflamación articular, atrofia muscular muslo si crónico.
-    DIAGNÓSTICO: Prueba cajón anterior positiva, prueba compresión tibial positiva,
-    radiografías: efusión articular, signo de grasa infrapatelar, osteofitos si crónico.
-    PREDISPOSICIÓN: Razas grandes, sobrepeso, >5 años. 40-60% desarrollan ruptura contralateral.
-    TRATAMIENTO QUIRÚRGICO (recomendado >15kg):
-    - TPLO (Tibial Plateau Leveling Osteotomy): Gold standard razas grandes
-    - TTA (Tibial Tuberosity Advancement): Alternativa efectiva
-    - Extracapsular: Perros <15kg, técnica más económica
-    TRATAMIENTO CONSERVADOR (<15kg o limitaciones económicas):
-    - Reposo estricto 8 semanas
-    - AINES: Meloxicam 0.1mg/kg SID o Carprofeno 2.2mg/kg BID
-    - Fisioterapia, control peso crucial
-    - Condroprotectores: Glucosamina/condroitina
-    PRONÓSTICO: Quirúrgico: 85-90% función normal. Conservador: 
-    variable, osteoartritis inevitable."""
+    # === SÍNDROME BRAQUICEFÁLICO ===
+    "braquicefalico_overview": {
+        "content": "SÍNDROME BRAQUICEFÁLICO: Obstrucción vías aéreas superiores en razas de cráneo corto (bulldogs, pugs, Boston terrier). Componentes: estenosis narinas, paladar blando elongado, eversión sáculos laríngeos, hipoplasia tráquea, colapso laríngeo.",
+        "category": "overview",
+        "disease": "braquicefalico"
+    },
+    "braquicefalico_symptoms": {
+        "content": "SÍNTOMAS SÍNDROME BRAQUICEFÁLICO: Respiración ruidosa (estridor, estertor), intolerancia al ejercicio/calor, cianosis, síncope, arcadas/vómito, golpe de calor (predisposición). Empeora con edad si no se trata.",
+        "category": "symptoms",
+        "disease": "braquicefalico"
+    },
+    "braquicefalico_diagnosis": {
+        "content": "DIAGNÓSTICO SÍNDROME BRAQUICEFÁLICO: Clínico (raza + signos), exploración física (estenosis narinas visible), laringoscopia bajo anestesia (evaluar paladar, sáculos, laringe), radiografías cervicales/torácicas (hipoplasia traqueal).",
+        "category": "diagnosis",
+        "disease": "braquicefalico"
+    },
+    "braquicefalico_treatment": {
+        "content": """TRATAMIENTO SÍNDROME BRAQUICEFÁLICO:
+        EMERGENCIA RESPIRATORIA: Sedación (butorfanol 0.2mg/kg IV/IM), oxígeno, enfriamiento activo si hipertermia, intubación si necesario. Dexametasona 0.1-0.2mg/kg IV. Furosemida 2-4mg/kg IV si edema pulmonar (repetir cada 1-6h en emergencias).
+        DEFINITIVO: Cirugía correctiva - rinoplastia, estafilectomía, sacculectomía. Realizar temprano (6-12 meses ideal).
+        MANEJO: Evitar calor/estrés, peso ideal, arnés (no collar).
+        PRONÓSTICO: Excelente con cirugía temprana.""",
+        "category": "treatment",
+        "disease": "braquicefalico"
+    },
+
+    # === INTOXICACIÓN CHOCOLATE ===
+    "chocolate_overview": {
+        "content": "INTOXICACIÓN POR CHOCOLATE: Toxicosis por teobromina/cafeína. Común en perros (metabolizan teobromina lentamente). Chocolate negro más peligroso (14mg teobromina/g) vs chocolate con leche (2mg/g).",
+        "category": "overview",
+        "disease": "chocolate"
+    },
+    "chocolate_symptoms": {
+        "content": "SÍNTOMAS INTOXICACIÓN CHOCOLATE (4-12h post-ingesta): Signos gastrointestinales (vómitos, diarrea), cardiovasculares (taquicardia, arritmias), neurológicos (hiperactividad, temblores, convulsiones), poliuria/polidipsia. Dosis tóxica: >20mg/kg signos leves, >40mg/kg severos, >60mg/kg convulsiones.",
+        "category": "symptoms",
+        "disease": "chocolate"
+    },
+    "chocolate_diagnosis": {
+        "content": "DIAGNÓSTICO INTOXICACIÓN CHOCOLATE: Historia de ingesta, cálculo dosis ingerida (tipo chocolate + cantidad), signos clínicos, ECG (arritmias), química sanguínea (hipokalemia).",
+        "category": "diagnosis",
+        "disease": "chocolate"
+    },
+    "chocolate_treatment": {
+        "content": """TRATAMIENTO INTOXICACIÓN CHOCOLATE:
+        <2h ingesta: Inducir vómito (apomorfina 0.04mg/kg IV o conjuntival).
+        Carbón activado: Exposición leve-moderada (<60mg/kg): 1-2g/kg PO dosis única. Severa (>60mg/kg): 1-2g/kg PO, puede repetirse cada 4-6h x 24h SOLO casos graves.
+        Fluidoterapia IV para promover eliminación.
+        Taquicardia severa: Propranolol 0.02-0.06mg/kg IV lento.
+        Convulsiones: Diazepam 0.5-1mg/kg IV.
+        Monitoreo ECG continuo si >40mg/kg ingerido.
+        PRONÓSTICO: Excelente con tratamiento temprano.""",
+        "category": "treatment",
+        "disease": "chocolate"
+    },
+
+    # === RUPTURA LIGAMENTO CRUZADO ===
+    "acl_overview": {
+        "content": "RUPTURA LIGAMENTO CRUZADO CRANEAL: Causa más común de cojera miembro posterior en perros. Predisposición: razas grandes, sobrepeso, >5 años. 40-60% desarrollan ruptura contralateral.",
+        "category": "overview",
+        "disease": "acl"
+    },
+    "acl_symptoms": {
+        "content": "SÍNTOMAS RUPTURA LCC: Cojera aguda o crónica progresiva, apoyo parcial o nulo del miembro afectado, inflamación articular (efusión), atrofia muscular del muslo si crónico, dolor a la manipulación.",
+        "category": "symptoms",
+        "disease": "acl"
+    },
+    "acl_diagnosis": {
+        "content": "DIAGNÓSTICO RUPTURA LCC: Prueba cajón anterior positiva (desplazamiento craneal de tibia respecto a fémur), prueba de compresión tibial positiva, radiografías (efusión articular, signo de grasa infrapatelar desplazado, osteofitos si crónico, desplazamiento craneal de tibia).",
+        "category": "diagnosis",
+        "disease": "acl"
+    },
+    "acl_treatment": {
+        "content": """TRATAMIENTO RUPTURA LCC:
+        QUIRÚRGICO (recomendado >15kg): TPLO (gold standard razas grandes), TTA (alternativa efectiva), Extracapsular (perros <15kg).
+        CONSERVADOR (<15kg o limitaciones económicas): Reposo estricto 8 semanas, AINES (Meloxicam 0.1mg/kg SID o Carprofeno 2.2mg/kg BID), fisioterapia, control peso, condroprotectores.
+        PRONÓSTICO: Quirúrgico 85-90% función normal. Conservador: variable, osteoartritis inevitable.""",
+        "category": "treatment",
+        "disease": "acl"
+    },
+
+    # === PROTOCOLO ANESTESIA ===
+    "anestesia_canino_sano": {
+        "content": """PROTOCOLO ANESTESIA PERRO SANO:
+        Pre-medicación: Acepromacina 0.02-0.05mg/kg + Morfina 0.2-0.5mg/kg IM.
+        Inducción: Propofol 4-6mg/kg IV a efecto.
+        Mantenimiento: Isoflurano 1-2% o Sevoflurano 3-4% end-tidal (profundidad quirúrgica; 2-3% puede ser adecuado con premedicación pesada).
+        Analgesia: Meloxicam 0.2mg/kg IV/SC (DÍA 1 únicamente). Día 2+: Meloxicam 0.1mg/kg PO SID.""",
+        "category": "protocol",
+        "disease": "anesthesia"
+    },
 }
 
 # Populate database with all veterinary knowledge
@@ -214,7 +314,7 @@ def query_knowledge(query: str) -> str:
       # Returns most similar values
       results = collection.query(
          query_texts=[query], # Used for embedding and search
-         n_results=3, # Return top 3 values, even if not relevant (adjustable)
+         n_results=10, # Return top 3 values, even if not relevant (adjustable)
          include=["metadatas", "distances"] # Used for retrieval (id's by default, metadatas and distances)
       )
 
@@ -247,7 +347,7 @@ def query_knowledge(query: str) -> str:
             logger.warning(f"Invalid metadata at index {i}: {metadata}")
 
          # Filter (very strict threshold because of very small knowledge base)
-         if distance < 0.21: # Adjustable threshold (make it less strict as knowledgebase expands)
+         if distance < 0.65: # Adjustable threshold (make it less strict as knowledgebase expands)
             filtered_knowledge.append(knowledge_content)
             logger.info(f"   ✓ Match {i+1} [{knowledge_key}]: {knowledge_content[:50]}... (Distance: {distance:.3f})")
          else:
