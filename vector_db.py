@@ -175,9 +175,9 @@ def query_knowledge(query: str) -> str:
       # Compares the query embeddings to the collections values embeddings
       # Returns most similar values
       results = collection.query(
-         query_texts=[f"query: {query}"], # Prefix for E5 model usage
-         n_results=5, # Return top 3 values, even if not relevant (adjustable)
-         include=["metadatas", "distances"] # Include id's (default), metadatas and distances in results
+         query_texts=[f"query: {query}"], # Used for embedding and search (Prefix for E5 model usage)
+         n_results=3, # Return top 3 values, even if not relevant (adjustable)
+         include=["metadatas", "distances"] # Used for retrieval (id's by default, metadatas and distances)
       )
 
       # Check for valid results
@@ -214,6 +214,18 @@ def query_knowledge(query: str) -> str:
             logger.info(f"   ✓ Match {i+1} [{knowledge_key}]: {knowledge_content[:50]}... (Distance: {distance:.3f})")
          else:
             logger.info(f"   ✗ Weak Match {i+1} [{knowledge_key}]: {knowledge_content[:50]}... (Distance: {distance:.3f})")
+      
+      # If no strong filtered matches, return the best unfiltered match
+      if not filtered_knowledge and results["metadatas"][0]:
+         best_match = results["metadatas"][0][0].get("knowledge_content", "")
+         return f"Found a potentially related knowledge (but confidence is low):\n\n{best_match}"
+      
+      # Format response based on number of matches
+      if len(filtered_knowledge) == 1:
+         return filtered_knowledge[0]
+      else:
+         summary = "\n\n".join([f"• {knowledge}" for knowledge in filtered_knowledge])
+         return f"Found multiple relevant knowledge:\n\n{summary}\n\nWould you like to refine your query?"
 
    except Exception as e: # Catch any errors during search
       logger.error(f"Error querying knowledge: {str(e)}")
@@ -236,7 +248,7 @@ if __name__ == "__main__":
    # print(collection.get())
 
    # Create collection and index Veterinary Knowledge
-   insert_knowledge()
+   # insert_knowledge()
 
    # TESTING QUERIES
    queries = [
