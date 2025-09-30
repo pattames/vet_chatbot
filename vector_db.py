@@ -214,16 +214,17 @@ def query_knowledge(query: str) -> str:
             logger.info(f"   ✓ Match {i+1} [{knowledge_key}]: {knowledge_content[:50]}... (Distance: {distance:.3f})")
          else:
             logger.info(f"   ✗ Weak Match {i+1} [{knowledge_key}]: {knowledge_content[:50]}... (Distance: {distance:.3f})")
-      
+
+     # Format response based on number of filtered matches 
       # If no strong filtered matches, return the best unfiltered match
       if not filtered_knowledge and results["metadatas"][0]:
          best_match = results["metadatas"][0][0].get("knowledge_content", "")
          return f"Found a potentially related knowledge (but confidence is low):\n\n{best_match}"
       
-      # Format response based on number of matches
       if len(filtered_knowledge) == 1:
          return filtered_knowledge[0]
-      else:
+      
+      if filtered_knowledge:
          summary = "\n\n".join([f"• {knowledge}" for knowledge in filtered_knowledge])
          return f"Found multiple relevant knowledge:\n\n{summary}\n\nWould you like to refine your query?"
 
