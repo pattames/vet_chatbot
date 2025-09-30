@@ -3,6 +3,7 @@ import shutil
 import chromadb
 from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
 import logging
+from knowledge_base import KNOWLEDGE_BASE
 
 # Initialize Logging
 logging.basicConfig(level=logging.INFO)
@@ -14,47 +15,16 @@ chroma_client = chromadb.PersistentClient(path=DB_PATH)
 
 # Use Sentence Transformers embedding function
 embedding_function = SentenceTransformerEmbeddingFunction(
-   model_name="intfloat/multilingual-e5-base" # Keep checking if it's accurate enough
+   model_name="intfloat/multilingual-e5-base" # Multilingual for spanish
 )
 
 # Create or get collection in ChromaDB
 # The embedding function will be used when adding documents
 collection = chroma_client.get_or_create_collection(
    name="veterinary_knowledge",
-   embedding_function=embedding_function
+   embedding_function=embedding_function,
+   metadata={"hnsw:space": "cosine"} # Use Cosine Distance instead of default L2 distance (better for semantic similarity)
 )
-
-# KNOWLEDGE_BASE
-KNOWLEDGE_BASE = {
-    # Enfermedades Infecciosas
-    "parvovirus_canino": """Gastroenteritis viral aguda. 
-    SÍNTOMAS: Vómitos severos, diarrea hemorrágica, deshidratación, leucopenia.
-    DIAGNÓSTICO: Test ELISA rápido en heces, PCR.
-    TRATAMIENTO: Soporte - fluidoterapia IV agresiva (90-120 ml/kg/día), 
-    antieméticos (maropitant 1mg/kg SC SID), antibióticos si leucopenia 
-    (ampicilina 20mg/kg IV TID), control dolor (buprenorfina 0.01-0.02mg/kg).
-    PRONÓSTICO: 70-90% supervivencia con tratamiento intensivo.""",
-    
-    "ehrlichiosis_canina": """Enfermedad rickettsial transmitida por Rhipicephalus sanguineus.
-    FASES: Aguda (2-4 sem), subclínica (meses-años), crónica.
-    SIGNOS: Fiebre, anorexia, linfadenopatía, trombocitopenia, anemia.
-    DIAGNÓSTICO: Serología (IFI, ELISA), PCR, visualización mórulas.
-    TRATAMIENTO: Doxiciclina 10mg/kg PO SID x 28 días.
-    PRONÓSTICO: Excelente si tratamiento temprano.""",
-    
-    # Urgencias
-    "gvd_torsion_gastrica": """Dilatación-vólvulo gástrico. EMERGENCIA QUIRÚRGICA.
-    PRESENTACIÓN: Distensión abdominal, arcadas improductivas, shock.
-    ESTABILIZACIÓN: Fluidoterapia shock (90ml/kg/hora), descompresión gástrica.
-    CIRUGÍA: Reposición gástrica + gastropexia preventiva.
-    MORTALIDAD: 15-33% incluso con tratamiento.""",
-    
-    # Protocolos Anestésicos
-    "protocolo_anestesia_canino_sano": """Pre-medicación: Acepromacina 0.02-0.05mg/kg + 
-    Morfina 0.2-0.5mg/kg IM. Inducción: Propofol 4-6mg/kg IV efecto.
-    Mantenimiento: Isoflurano 1-2% o Sevoflurano 2-3%.
-    Analgesia: Meloxicam 0.2mg/kg IV/SC (una vez).""",
-}
 
 # Populate database with all veterinary knowledge
 def insert_knowledge():
@@ -75,7 +45,7 @@ def insert_knowledge():
 
          collection.add(
             ids=[key],
-            documents=[value], # Used for embedding and search
+            documents=[f"passage: {value}"], # Used for embedding and search (With prefix for E5 model usage)
             metadatas=[{"knowledge_key": key, "knowledge_content": value}] # Used for retrieval
          )
          logger.info(f"Stored knowledge: {key} → {value[:50]}...")
@@ -93,7 +63,7 @@ def query_knowledge(query: str) -> str:
       # Compares the query embeddings to the collections values embeddings
       # Returns most similar values
       results = collection.query(
-         query_texts=[query],
+         query_texts=[f"query: {query}"], # Prefix for E5 model usage
          n_results=3, # Return top 3 values, even if not relevant (adjustable)
          include=["metadatas", "distances"] # Include id's (default), metadatas and distances in results
       )
@@ -126,7 +96,12 @@ def query_knowledge(query: str) -> str:
             knowledge_key = ""
             logger.warning(f"Invalid metadata at index {i}: {metadata}")
 
-         print(knowledge_key, distance)
+         # Filter (very strict threshold because of very small knowledge base)
+         if distance < 0.21: # Adjustable threshold (make it less strict as knowledgebase expands)
+            filtered_knowledge.append(knowledge_content)
+            logger.info(f"   ✓ Match {i+1} [{knowledge_key}]: {knowledge_content[:50]}... (Distance: {distance:.3f})")
+         else:
+            logger.info(f"   ✗ Weak Match {i+1} [{knowledge_key}]: {knowledge_content[:50]}... (Distance: {distance:.3f})")
 
    except Exception as e: # Catch any errors during search
       logger.error(f"Error querying knowledge: {str(e)}")
@@ -151,5 +126,5 @@ if __name__ == "__main__":
    # Create collection and index Veterinary Knowledge
    # insert_knowledge()
 
-   #Check unfiltered knowledge
-   query_knowledge("distensión abdominal arcadas")
+   #Check
+   query_knowledge("Taquicardia severa")
