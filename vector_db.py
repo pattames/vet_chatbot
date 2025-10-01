@@ -25,7 +25,7 @@ collection = chroma_client.get_or_create_collection(
    metadata={"hnsw:space": "cosine"} # Use Cosine Distance instead of default L2 distance (better for semantic similarity)
 )
 
-# DISEASE KNOWLEDGE BASE (chunked/ nested objects)
+# KNOWLEDGE BASE (chunked veterinary diseases)
 KNOWLEDGE_BASE = {
     # === PARVOVIRUS ===
     "parvovirus_overview": {
@@ -276,7 +276,7 @@ KNOWLEDGE_BASE = {
     },
 }
 
-# Populate database with all veterinary knowledge
+# Populate database with all knowledge base's chunks
 def insert_diseases():
    """Store all Veterinary Diseases in ChromaDB"""
    logger.info("\nIndexing Veterinary Diseases...")
@@ -285,36 +285,36 @@ def insert_diseases():
    existing_docs = collection.get()
    existing_ids = set(existing_docs.get("ids", []))
 
-   for disease_chunk_key, disease_chunk_data in KNOWLEDGE_BASE.items():
+   for chunk_key, chunk_data in KNOWLEDGE_BASE.items():
       # Safe insertion
       try:
          # Skip document if it already exists (avoids duplicates)
-         if disease_chunk_key in existing_ids:
-            logger.info(f"{disease_chunk_key} already exists in collection, skipping...")
+         if chunk_key in existing_ids:
+            logger.info(f"{chunk_key} already exists in collection, skipping...")
             continue # Jump to the next iteration (code below doesn't execute for this iteration)
 
          collection.add(
-            ids=[disease_chunk_key],
-            documents=[disease_chunk_data["content"]], # Used for embedding and search
-            metadatas=[{"disease_chunk_id": disease_chunk_key, "disease_chunk_content": disease_chunk_data["content"], "disease_chunk_category": disease_chunk_data["category"], "disease_chunk_disease": disease_chunk_data["disease"]}] # Used for retrieval
+            ids=[chunk_key],
+            documents=[chunk_data["content"]], # Used for embedding and search
+            metadatas=[{"chunk_id": chunk_key, "chunk_content": chunk_data["content"], "chunk_category": chunk_data["category"], "chunk_disease": chunk_data["disease"]}] # Used for retrieval
          )
-         logger.info(f"Stored: {disease_chunk_key} → {disease_chunk_data["content"][:50]}...")
+         logger.info(f"Stored: {chunk_key} → {chunk_data['content'][:50]}...")
 
       except Exception as e: # Catch any exception that happens during insertion
-         logger.error(f"Error inserting {disease_chunk_key}: {str(e)}")
+         logger.error(f"Error inserting {chunk_key}: {str(e)}")
 
-# Function to compare query to collection's values and return matching knowledge
+# Function to compare query to collection's content and return matches
 def query_diseases(query: str) -> str:
    """Query VectorDB for Veterinary Diseases"""
    logger.info(f"Searching collection for \"{query}\" matches")
 
    try:
       # Vector similarity search
-      # Compares the query embeddings to the diseases chunks contents embeddings
-      # Returns most similar diseases chunks
+      # Compares query embedding to every chunks content embedding
+      # Returns most similar chunks content
       results = collection.query(
          query_texts=[query], # Used for embedding and search
-         n_results=10, # Return top 3 results, even if not relevant (adjustable)
+         n_results=10, # Return top 10 results, even if not relevant (adjustable)
          include=["metadatas", "distances"] # Used for retrieval (id's by default, metadatas and distances)
       )
 
@@ -325,36 +325,32 @@ def query_diseases(query: str) -> str:
       # Log all results
       logger.info(f"Top 10 results:")
       for i, (metadata, distance) in enumerate(zip(results["metadatas"][0], results["distances"][0])):
-         disease_chunk_id = metadata.get("disease_chunk_id", "unknown")
-         disease_chunk_disease = metadata.get("disease_chunk_disease", "unknown")
-         disease_chunk_category = metadata.get("disease_chunk_category", "unknown")
-         logger.info(f" {i+1}. [{disease_chunk_disease}/{disease_chunk_category}] {disease_chunk_id}: {distance:.3f}")
+         chunk_id = metadata.get("chunk_id", "unknown")
+         chunk_disease = metadata.get("chunk_disease", "unknown")
+         chunk_category = metadata.get("chunk_category", "unknown")
+         logger.info(f" {i+1}. [{chunk_disease}/{chunk_category}] {chunk_id}: {distance:.3f}")
       
       # Filter results by distance threshold
       filtered_results = []
-      # Process results to meet quality
+      
       for i, metadata in enumerate(results["metadatas"][0]):
-         # Grab distance (lower is better)
          distance = results["distances"][0][i]
-         # Filter
          if distance < 0.70: # Adjustable threshold
-            filtered_results.append(metadata.get("disease_chunk_content", ""))
+            filtered_results.append(metadata.get("chunk_content", ""))
             logger.info(f"   ✓ Using result {i+1}")
 
       # Format response
-      # If no results passed the filter, return best unfiltered match
+      # If nothing passed, return best unfiltered match
       if not filtered_results and results["metadatas"][0]:
-            best_match = results["metadatas"][0][0].get("disease_chunk_content", "")
-            return f"Found potentially related info (low confidence):\n\n{best_match}"
-      # If only one result passed the filter, return it
+            best_match = results["metadatas"][0][0].get("chunk_content", "")
+            return f"Se encontró información potencialmente relacionada, pero con bajos niveles de confianza:\n\n{best_match}"
+      # If only one result passed, return it
       if len(filtered_results) == 1:
             return filtered_results[0]
-      # If multiple results passed the filter, return them
+      # If multiple results passed, return them
       if filtered_results:
-            summary = "\n\n".join([f"• {disease_chunk_content}" for disease_chunk_content in filtered_results])
-            return f"Found relevant information:\n\n{summary}"
-      # Else
-      return "No relevant knowledge found."
+            summary = "\n\n".join([f"• {content}" for content in filtered_results])
+            return f"Se encontró información relevante:\n\n{summary}"
          
    except Exception as e: # Catch any errors during search
       logger.error(f"Error querying collection: {str(e)}")
@@ -376,8 +372,8 @@ if __name__ == "__main__":
    # Check collection
    # print(collection.get())
 
-   # Create collection and index Veterinary Diseases
-   # insert_diseases()  # ← Also fixed this comment
+   # Create collection and index chunks
+   # insert_diseases()
 
    # TESTING QUERIES
    test_queries = [
