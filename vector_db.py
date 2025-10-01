@@ -1,7 +1,7 @@
 import os
 import shutil
 import chromadb
-from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
+from sentence_transformers import SentenceTransformer
 import logging
 
 # Initialize Logging
@@ -13,8 +13,8 @@ DB_PATH = "./vector_db"
 chroma_client = chromadb.PersistentClient(path=DB_PATH)
 
 # Use Sentence Transformers embedding function
-embedding_function = SentenceTransformerEmbeddingFunction(
-   model_name="paraphrase-multilingual-MiniLM-L12-v2" # Multilingual for spanish
+embedding_function = SentenceTransformer(
+   model_name="PlanTL-GOB-ES/bsc-bio-ehr-es" # For medical in spanish
 )
 
 # Create or get collection in ChromaDB
