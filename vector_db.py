@@ -14,7 +14,7 @@ chroma_client = chromadb.PersistentClient(path=DB_PATH)
 
 # Use Sentence Transformers embedding function
 embedding_function = SentenceTransformerEmbeddingFunction(
-   model_name="PlanTL-GOB-ES/bsc-bio-ehr-es" # For medical knowledge in spanish
+   model_name="intfloat/multilingual-e5-base" # For medical knowledge in spanish
 )
 
 # Create or get collection in ChromaDB
@@ -295,7 +295,7 @@ def insert_diseases():
 
          collection.add(
             ids=[chunk_key],
-            documents=[chunk_data["content"]], # Used for embedding and search
+            documents=[f"passage: {chunk_data["content"]}"], # Used for embedding and search
             metadatas=[{"chunk_id": chunk_key, "chunk_content": chunk_data["content"], "chunk_category": chunk_data["category"], "chunk_disease": chunk_data["disease"]}] # Used for retrieval
          )
          logger.info(f"Stored: {chunk_key} → {chunk_data['content'][:50]}...")
@@ -313,7 +313,7 @@ def query_diseases(query: str) -> str:
       # Compares query embedding to every chunks content embedding
       # Returns most similar chunks content
       results = collection.query(
-         query_texts=[query], # Used for embedding and search
+         query_texts=[f"query: {query}"], # Used for embedding and search
          n_results=5, # Return top 5 results, even if not relevant (adjustable)
          include=["metadatas", "distances"] # Used for retrieval (id's by default, metadatas and distances)
       )
