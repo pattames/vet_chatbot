@@ -381,9 +381,9 @@ if __name__ == "__main__":
       "Perro con vómitos severos y diarrea con sangre",
       "Perro con picazón intensa en patas y orejas",
       "Mi perro comió chocolate, ¿es peligroso?",
-      "Emergencia: perro con abdomen hinchado y shock",
+      "Emergencia: perro con abdomen hinchado y en shock",
       "Perro con cojera en pata trasera que no apoya",
-      "Gato senior con vómitos y mal aliento",
+      "Gato adulto con vómitos y mal aliento",
    ]
 
    for query in test_queries:
