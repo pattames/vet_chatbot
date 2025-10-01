@@ -20,12 +20,12 @@ embedding_function = SentenceTransformerEmbeddingFunction(
 # Create or get collection in ChromaDB
 # The embedding function will be used when adding documents
 collection = chroma_client.get_or_create_collection(
-   name="veterinary_knowledge",
+   name="veterinary_diseases",
    embedding_function=embedding_function,
    metadata={"hnsw:space": "cosine"} # Use Cosine Distance instead of default L2 distance (better for semantic similarity)
 )
 
-# CHUNKED KNOWLEDGE BASE
+# DISEASE KNOWLEDGE BASE (chunked/ nested objects)
 KNOWLEDGE_BASE = {
     # === PARVOVIRUS ===
     "parvovirus_overview": {
@@ -277,98 +277,88 @@ KNOWLEDGE_BASE = {
 }
 
 # Populate database with all veterinary knowledge
-def insert_knowledge():
-   """Store all Veterinary Knowledge in ChromaDB"""
-   logger.info("\nIndexing Veterinary Knowledge into Unified Knowledge Base...")
+def insert_diseases():
+   """Store all Veterinary Diseases in ChromaDB"""
+   logger.info("\nIndexing Veterinary Diseases...")
 
-   # Grab all existing IDs to avoid duplicates ahead
+   # Grab all existing IDs from collection to avoid duplicates ahead
    existing_docs = collection.get()
    existing_ids = set(existing_docs.get("ids", []))
 
-   for key, value in KNOWLEDGE_BASE.items():
+   for disease_chunk_key, disease_chunk_data in KNOWLEDGE_BASE.items():
       # Safe insertion
       try:
          # Skip document if it already exists (avoids duplicates)
-         if key in existing_ids:
-            logger.info(f"Knowledge already exists: {key}, skipping...")
+         if disease_chunk_key in existing_ids:
+            logger.info(f"{disease_chunk_key} already exists in collection, skipping...")
             continue # Jump to the next iteration (code below doesn't execute for this iteration)
 
          collection.add(
-            ids=[key],
-            documents=[value], # Used for embedding and search
-            metadatas=[{"knowledge_key": key, "knowledge_content": value}] # Used for retrieval
+            ids=[disease_chunk_key],
+            documents=[disease_chunk_data["content"]], # Used for embedding and search
+            metadatas=[{"disease_chunk_id": disease_chunk_key, "disease_chunk_content": disease_chunk_data["content"], "disease_chunk_category": disease_chunk_data["category"], "disease_chunk_disease": disease_chunk_data["disease"]}] # Used for retrieval
          )
-         logger.info(f"Stored knowledge: {key} → {value[:50]}...")
+         logger.info(f"Stored: {disease_chunk_key} → {disease_chunk_data["content"][:50]}...")
 
       except Exception as e: # Catch any exception that happens during insertion
-         logger.error(f"Error inserting knowledge {key}: {str(e)}")
+         logger.error(f"Error inserting {disease_chunk_key}: {str(e)}")
 
 # Function to compare query to collection's values and return matching knowledge
-def query_knowledge(query: str) -> str:
-   """Query VectorDB for Veterinary Knowledge"""
-   logger.info(f"Searching Unified Knowledge Base for query: \"{query}\" matches")
+def query_diseases(query: str) -> str:
+   """Query VectorDB for Veterinary Diseases"""
+   logger.info(f"Searching collection for \"{query}\" matches")
 
    try:
       # Vector similarity search
-      # Compares the query embeddings to the collections values embeddings
-      # Returns most similar values
+      # Compares the query embeddings to the diseases chunks contents embeddings
+      # Returns most similar diseases chunks
       results = collection.query(
          query_texts=[query], # Used for embedding and search
-         n_results=10, # Return top 3 values, even if not relevant (adjustable)
+         n_results=10, # Return top 3 results, even if not relevant (adjustable)
          include=["metadatas", "distances"] # Used for retrieval (id's by default, metadatas and distances)
       )
 
       # Check for valid results
       if not results or not results.get("metadatas") or not results["metadatas"][0]:
-         return "No relevant knowledge found."
-
-      # Check unfiltered results
-      # for metadata in results["metadatas"][0]:
-      #    print(metadata.get("knowledge_key", ""))
-
-      # Results that pass similarity threshold
-      logger.info(f"Vector search results for query: {query}")
-      filtered_knowledge = []
+         return "No relevant diseases found."
+      
+      # Log all results
+      logger.info(f"Top 10 results:")
+      for i, (metadata, distance) in enumerate(zip(results["metadatas"][0], results["distances"][0])):
+         disease_chunk_id = metadata.get("disease_chunk_id", "unknown")
+         disease_chunk_disease = metadata.get("disease_chunk_disease", "unknown")
+         disease_chunk_category = metadata.get("disease_chunk_category", "unknown")
+         logger.info(f" {i+1}. [{disease_chunk_disease}/{disease_chunk_category}] {disease_chunk_id}: {distance:.3f}")
+      
+      # Filter results by distance threshold
+      filtered_results = []
       # Process results to meet quality
       for i, metadata in enumerate(results["metadatas"][0]):
-         # Get distance (lower is better for L2 distance)
-         try:
-            distance = results["distances"][0][i]
-         except (IndexError, KeyError, TypeError):
-            distance = float("inf") # If error, set distance to infinity (will fail threshold)
+         # Grab distance (lower is better)
+         distance = results["distances"][0][i]
+         # Filter
+         if distance < 0.70: # Adjustable threshold
+            filtered_results.append(metadata.get("disease_chunk_content", ""))
+            logger.info(f"   ✓ Using result {i+1}")
 
-         # Get metadata's key and content (handle in case it's None or malformed)
-         if metadata and isinstance(metadata, dict):
-            knowledge_content = metadata.get("knowledge_content", "")
-            knowledge_key = metadata.get("knowledge_key", "")
-         else:
-            knowledge_content = ""
-            knowledge_key = ""
-            logger.warning(f"Invalid metadata at index {i}: {metadata}")
-
-         # Filter (very strict threshold because of very small knowledge base)
-         if distance < 0.65: # Adjustable threshold (make it less strict as knowledgebase expands)
-            filtered_knowledge.append(knowledge_content)
-            logger.info(f"   ✓ Match {i+1} [{knowledge_key}]: {knowledge_content[:50]}... (Distance: {distance:.3f})")
-         else:
-            logger.info(f"   ✗ Weak Match {i+1} [{knowledge_key}]: {knowledge_content[:50]}... (Distance: {distance:.3f})")
-
-      # Format response based on number of filtered matches 
-      # If no strong filtered matches, return the best unfiltered match
-      if not filtered_knowledge and results["metadatas"][0]:
-         best_match = results["metadatas"][0][0].get("knowledge_content", "")
-         return f"Found a potentially related knowledge (but confidence is low):\n\n{best_match}"
-      
-      if len(filtered_knowledge) == 1:
-         return filtered_knowledge[0]
-      
-      if filtered_knowledge:
-         summary = "\n\n".join([f"• {knowledge}" for knowledge in filtered_knowledge])
-         return f"Found multiple relevant knowledge:\n\n{summary}\n\nWould you like to refine your query?"
-
+      # Format response
+      # If no results passed the filter, return best unfiltered match
+      if not filtered_results and results["metadatas"][0]:
+            best_match = results["metadatas"][0][0].get("disease_chunk_content", "")
+            return f"Found potentially related info (low confidence):\n\n{best_match}"
+      # If only one result passed the filter, return it
+      if len(filtered_results) == 1:
+            return filtered_results[0]
+      # If multiple results passed the filter, return them
+      if filtered_results:
+            summary = "\n\n".join([f"• {disease_chunk_content}" for disease_chunk_content in filtered_results])
+            return f"Found relevant information:\n\n{summary}"
+      # Else
+      return "No relevant knowledge found."
+         
    except Exception as e: # Catch any errors during search
-      logger.error(f"Error querying knowledge: {str(e)}")
-      return "An error occured while looking for knowledge"
+      logger.error(f"Error querying collection: {str(e)}")
+      return "An error occured while querying collection"
 
 # Utility to reset collection
 def reset_collection(): # Use when modified knowledge base, changed embedding model or testing fresh installs
@@ -386,78 +376,22 @@ if __name__ == "__main__":
    # Check collection
    # print(collection.get())
 
-   # Create collection and index Veterinary Knowledge
-   # insert_knowledge()
+   # Create collection and index Veterinary Diseases
+   # insert_diseases()  # ← Also fixed this comment
 
    # TESTING QUERIES
-   queries = [
-      # Direct disease/condition queries
-      "¿Qué es el parvovirus canino?",  # Expected: parvovirus_canino
-      "Información sobre ehrlichiosis en perros",  # Expected: ehrlichiosis_canina
-      "Mi perro tiene diabetes, ¿qué hago?",  # Expected: diabetes_mellitus_canina
-      "¿Qué es la torsión gástrica?",  # Expected: gvd_torsion_gastrica
-      
-      # Symptom-based queries
-      "Perro con vómitos severos y diarrea con sangre",  # Expected: parvovirus_canino
-      "Mi perro tiene el abdomen distendido y está intentando vomitar sin éxito",  # Expected: gvd_torsion_gastrica
-      "Perro con mucha sed, orina mucho y está perdiendo peso",  # Expected: diabetes_mellitus_canina OR enfermedad_renal_cronica
-      "Gato senior con vómitos y mal aliento",  # Expected: enfermedad_renal_cronica
-      "Perro con picazón intensa en patas y orejas",  # Expected: dermatitis_atopica_canina
-      "Bulldog con dificultad para respirar y ruidos al respirar",  # Expected: sindrome_braquicefalico
-      "Perro con cojera en pata trasera que no apoya",  # Expected: ruptura_ligamento_cruzado
-      
-      # Emergency/toxicity queries
-      "Mi perro comió chocolate, ¿es peligroso?",  # Expected: intoxicacion_chocolate
-      "Emergencia: perro con abdomen hinchado y shock",  # Expected: gvd_torsion_gastrica
-      "Perro braquicéfalo con crisis respiratoria",  # Expected: sindrome_braquicefalico
-      
-      # Treatment/protocol queries
-      "Protocolo de anestesia para cirugía en perro sano",  # Expected: protocolo_anestesia_canino_sano
-      "¿Cómo se trata la ehrlichiosis?",  # Expected: ehrlichiosis_canina
-      "Tratamiento para parvovirus en cachorros",  # Expected: parvovirus_canino
-      "¿Qué insulina uso para un perro diabético?",  # Expected: diabetes_mellitus_canina
-      "Manejo de enfermedad renal en gatos",  # Expected: enfermedad_renal_cronica
-      
-      # Diagnostic queries
-      "¿Cómo diagnostico ehrlichiosis?",  # Expected: ehrlichiosis_canina
-      "Pruebas para confirmar diabetes en perros",  # Expected: diabetes_mellitus_canina
-      "¿Qué test uso para parvovirus?",  # Expected: parvovirus_canino
-      
-      # Prognosis queries
-      "¿Cuál es el pronóstico de un perro con parvovirus?",  # Expected: parvovirus_canino
-      "¿Se recupera un perro con torsión gástrica?",  # Expected: gvd_torsion_gastrica
-      "Expectativa de vida gato con enfermedad renal",  # Expected: enfermedad_renal_cronica
-      
-      # Specific clinical signs
-      "Perro con fiebre y plaquetas bajas",  # Expected: ehrlichiosis_canina
-      "Perro con convulsiones después de comer algo",  # Expected: intoxicacion_chocolate
-      "Perro con prueba de cajón positiva",  # Expected: ruptura_ligamento_cruzado
-      
-      # Breed-specific queries
-      "Problemas respiratorios en bulldogs",  # Expected: sindrome_braquicefalico
-      "Cirugía para perros de nariz chata",  # Expected: sindrome_braquicefalico
-      
-      # Chronic management queries
-      "Dieta para perro diabético",  # Expected: diabetes_mellitus_canina
-      "Control de alergias cutáneas crónicas",  # Expected: dermatitis_atopica_canina
-      "Manejo de insuficiencia renal crónica",  # Expected: enfermedad_renal_cronica
-      
-      # Medication/dosage queries
-      "Dosis de doxiciclina para ehrlichiosis",  # Expected: ehrlichiosis_canina
-      "¿Cuánto carbón activado dar en intoxicación?",  # Expected: intoxicacion_chocolate
-      "Dosis de Apoquel para dermatitis",  # Expected: dermatitis_atopica_canina
-      
-      # Surgical queries
-      "Cirugía para ligamento cruzado roto",  # Expected: ruptura_ligamento_cruzado
-      "Gastropexia preventiva en perros grandes",  # Expected: gvd_torsion_gastrica
-      
-      # Edge cases / ambiguous queries
-      "Perro vomitando",  # Could match: parvovirus_canino, enfermedad_renal_cronica, intoxicacion_chocolate (may not pass threshold)
-      "Perro con dolor",  # Very vague - may not return good matches
-      "Problemas de piel en perros",  # Expected: dermatitis_atopica_canina
+   test_queries = [
+      "¿Qué es el parvovirus canino?",
+      "Perro con vómitos severos y diarrea con sangre",
+      "Perro con picazón intensa en patas y orejas",
+      "Mi perro comió chocolate, ¿es peligroso?",
+      "Emergencia: perro con abdomen hinchado y shock",
+      "Perro con cojera en pata trasera que no apoya",
+      "Gato senior con vómitos y mal aliento",
    ]
 
-   for test_query in queries:
+   for query in test_queries:
       print(f"\n{'='*60}")
-      response = query_knowledge(test_query)
-      logger.info(f"Query: {test_query}\nResponse: {response}\n")
+      print(f"QUERY: {query}")
+      response = query_diseases(query)
+      print(f"\nRESPONSE:\n{response}\n")
