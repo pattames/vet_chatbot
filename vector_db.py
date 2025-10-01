@@ -314,7 +314,7 @@ def query_diseases(query: str) -> str:
       # Returns most similar chunks content
       results = collection.query(
          query_texts=[query], # Used for embedding and search
-         n_results=10, # Return top 10 results, even if not relevant (adjustable)
+         n_results=5, # Return top 5 results, even if not relevant (adjustable)
          include=["metadatas", "distances"] # Used for retrieval (id's by default, metadatas and distances)
       )
 
@@ -335,7 +335,7 @@ def query_diseases(query: str) -> str:
       
       for i, metadata in enumerate(results["metadatas"][0]):
          distance = results["distances"][0][i]
-         if distance < 0.70: # Adjustable threshold
+         if distance < 0.45: # Adjustable threshold
             filtered_results.append(metadata.get("chunk_content", ""))
             logger.info(f"   ✓ Using result {i+1}")
 
@@ -367,13 +367,13 @@ def reset_collection(): # Use when modified knowledge base, changed embedding mo
 
 if __name__ == "__main__":
    # Optional: Reset collection for fresh start (also delete folder inside vector_db):
-   # reset_collection()
+#    reset_collection()
 
    # Check collection
-   # print(collection.get())
+#    print(collection.get())
 
    # Create collection and index chunks
-   # insert_diseases()
+#    insert_diseases()
 
    # TESTING QUERIES
    test_queries = [
