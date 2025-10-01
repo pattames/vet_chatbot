@@ -14,7 +14,7 @@ chroma_client = chromadb.PersistentClient(path=DB_PATH)
 
 # Use Sentence Transformers embedding function
 embedding_function = SentenceTransformerEmbeddingFunction(
-   model_name="intfloat/multilingual-e5-base" # For medical knowledge in spanish
+   model_name="intfloat/multilingual-e5-base" # Multilingual for Spanish
 )
 
 # Create or get collection in ChromaDB
@@ -335,7 +335,7 @@ def query_diseases(query: str) -> str:
       
       for i, metadata in enumerate(results["metadatas"][0]):
          distance = results["distances"][0][i]
-         if distance < 0.45: # Adjustable threshold
+         if distance < 0.20: # Adjustable threshold
             filtered_results.append(metadata.get("chunk_content", ""))
             logger.info(f"   ✓ Using result {i+1}")
 
