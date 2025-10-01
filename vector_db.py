@@ -1,7 +1,7 @@
 import os
 import shutil
 import chromadb
-from sentence_transformers import SentenceTransformer
+from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
 import logging
 
 # Initialize Logging
@@ -13,7 +13,9 @@ DB_PATH = "./vector_db"
 chroma_client = chromadb.PersistentClient(path=DB_PATH)
 
 # Use Sentence Transformers embedding function
-embedding_function = SentenceTransformer("PlanTL-GOB-ES/bsc-bio-ehr-es") # For spanish and medical knowledge
+embedding_function = SentenceTransformerEmbeddingFunction(
+   model_name="PlanTL-GOB-ES/bsc-bio-ehr-es" # For medical knowledge in spanish
+)
 
 # Create or get collection in ChromaDB
 # The embedding function will be used when adding documents
@@ -365,7 +367,7 @@ def reset_collection(): # Use when modified knowledge base, changed embedding mo
 
 if __name__ == "__main__":
    # Optional: Reset collection for fresh start (also delete folder inside vector_db):
-   reset_collection()
+#    reset_collection()
 
    # Check collection
 #    print(collection.get())
@@ -384,8 +386,8 @@ if __name__ == "__main__":
       "Gato adulto con vómitos y mal aliento",
    ]
 
-#    for query in test_queries:
-#       print(f"\n{'='*60}")
-#       print(f"QUERY: {query}")
-#       response = query_diseases(query)
-#       print(f"\nRESPONSE:\n{response}\n")
+   for query in test_queries:
+      print(f"\n{'='*60}")
+      print(f"QUERY: {query}")
+      response = query_diseases(query)
+      print(f"\nRESPONSE:\n{response}\n")
