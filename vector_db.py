@@ -14,7 +14,7 @@ chroma_client = chromadb.PersistentClient(path=DB_PATH)
 
 # Use Sentence Transformers embedding function
 embedding_function = SentenceTransformerEmbeddingFunction(
-   model_name="paraphrase-multilingual-MiniLM-L12-v2" # Multilingual for spanish
+   model_name="intfloat/multilingual-e5-base" # Multilingual for Spanish
 )
 
 # Create or get collection in ChromaDB
@@ -295,7 +295,7 @@ def insert_diseases():
 
          collection.add(
             ids=[chunk_key],
-            documents=[chunk_data["content"]], # Used for embedding and search
+            documents=[f"passage: {chunk_data["content"]}"], # Used for embedding and search
             metadatas=[{"chunk_id": chunk_key, "chunk_content": chunk_data["content"], "chunk_category": chunk_data["category"], "chunk_disease": chunk_data["disease"]}] # Used for retrieval
          )
          logger.info(f"Stored: {chunk_key} → {chunk_data['content'][:50]}...")
@@ -313,7 +313,7 @@ def query_diseases(query: str) -> str:
       # Compares query embedding to every chunks content embedding
       # Returns most similar chunks content
       results = collection.query(
-         query_texts=[query], # Used for embedding and search
+         query_texts=[f"query: {query}"], # Used for embedding and search
          n_results=5, # Return top 5 results, even if not relevant (adjustable)
          include=["metadatas", "distances"] # Used for retrieval (id's by default, metadatas and distances)
       )
@@ -335,7 +335,7 @@ def query_diseases(query: str) -> str:
       
       for i, metadata in enumerate(results["metadatas"][0]):
          distance = results["distances"][0][i]
-         if distance < 0.45: # Adjustable threshold
+         if distance < 0.20: # Adjustable threshold
             filtered_results.append(metadata.get("chunk_content", ""))
             logger.info(f"   ✓ Using result {i+1}")
 
