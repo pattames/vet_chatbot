@@ -48,6 +48,18 @@ class VeterinaryAgents:
             tools=[self._create_db_retrieval_tool()]
         )
     
+    def veterinary_specialist_agent(self) -> Agent:
+        """Agent that formulates veterinary responses"""
+        return Agent(
+            role="Veterinario Clínico Educador",
+            goal="Proporcionar respuestas veterinarias educativas, precisas y apropiadas para estudiantes",
+            backstory="""Eres un veterinario clínico senior con más de 15 años de experiencia y pasión por la enseñanza.
+            Te especializas en medicina de pequeños animales y eres excelente explicando conceptos complejos de manera clara. Siempre priorizas la seguridad del paciente y la precisión médica.""",
+            llm=llm,
+            verbose=True,
+            allow_delegation=False
+        )
+    
     def _create_db_retrieval_tool(self):
         """Create tool wrapper for db information retrieval tool"""
         from crewai_tools import tool
@@ -116,5 +128,51 @@ class VeterinaryTasks:
             Tu único trabajo es invocar la herramienta y pasar sus resultados al siguiente agente.""",
             agent=agent,
             expected_output="Los resultados exactos devueltos por la herramienta de búsqueda",
+            context=context
+        )
+    
+    def specialist_response_task(self, agent: Agent, user_query: str, context: List[Task]) -> Task:
+        """Formulate appropriate response based on query type"""
+        return Task(
+            description=f"""Basándote en la clasificación de la consulta y la información recuperada (en caso de que hubiera), formula una respuesta apropiada.
+            
+            CONSULTA ORIGINAL: {user_query}
+
+            TIPO 1: CONSULTAS VETERINARIAS
+            A) Si hay información proveniente de la base de conocimientos:
+                - Úsala como fuente principal
+                - Incluye detalles específicos (dosis, protocolos, valores diagnósticos)
+                - Si es EMERGENCIA, comienza con: ⚠️ EMERGENCIA VETERINARIA
+            B) Si NO hay información proveniente de la base de conocimientos:
+                - Comienza con: "⚠️ Información basada en conocimiento general (no verificado en base de conocimientos):"
+                - Sugiere consultar literatura veterinaria adicional
+            Estructura: [Alerta de emergencia si aplica] + Respuesta principal + Detalles
+
+            TIPO 2: CONSULTAS DE SISTEMA
+            A) Saludos/¿Qué puedes hacer?:
+                "¡Hola! Soy tu asistente de aprendizaje en medicina veterinaria 🩺.
+
+                Puedo ayudarte con:
+                • Enfermedades y condiciones veterinarias
+                • Síntomas y diagnósticos
+                • Protocolos de tratamiento
+                • Emergencias veterinarias
+                • Procedimientos y anestesia
+
+                ¿En qué tema veterinario te gustaría que te ayude?"
+            B) Despedidas:
+                "¡Hasta pronto! Estoy aquí cuando necesites ayuda con temas veterinarios 🐕🐈"
+            C) Agradecimientos: "¡Con gusto! Si tienes más consultas veterinarias, estaré encantado de ayudarte 😊."
+
+            TIPO 3: CONSULTAS FUERA DE ALCANCE
+            "Soy un asistente especializado en medicina veterinaria.
+            
+            Puedo ayudarte con preguntas sobre enfermedades, síntomas, diagnósticos y tratamientos veterinarios, pero no puedo asistir con [mención breve del tema].
+
+            Tienes alguna consulta veterinaria en la que pueda ayudarte?"
+
+            Para todos los tipos de respuesta mantén un tono profesional pero accesible.""",
+            agent=agent,
+            expected_output="Respuesta completa y apropiada para el tipo de consulta (veterinaria, no veterinaria o de sistema)",
             context=context
         )
