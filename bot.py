@@ -119,27 +119,44 @@ class VeterinaryTasks:
 
             PASO 3 - Determina si se necesita BÚSQUEDA de información:
             - Sí: A todas las consultas de tipo VETERINARIAS
-            - No: A consultas de tipo SISTEMA Y FUERA_DE_ALCANCE""",
+            - No: A consultas de tipo SISTEMA Y FUERA_DE_ALCANCE
+            
+            PASO 4 - Si búsqueda = Sí, crea CONSULTA REFINADA:
+            - Reformula la consulta del usuario para búsqueda semántica
+            - Usa frases completas con contexto médico
+            - Ejemplos:
+                • "Mi perro comió chocolate" → "intoxicación por chocolate en perros"
+                • "Perro con vómitos y diarrea con sangre" → "síntomas de vómitos y diarrea hemorrágica en perros"
+                • "¿Qué es parvovirus?" → "Información sobre el parvovirus canino"
+            - Mantén contexto que sea importante (síntomas, especie, urgencia)
+            - NO uses solo palabras clave sueltas""",
             agent=agent,
             expected_output="""Clasificación estructurada:
             - Tipo: [VETERINARIA/SISTEMA/FUERA_DE_ALCANCE]
             - Urgencia: [EMERGENCIA/URGENTE/CONSULTA/EDUCATIVA] (solo si es de tipo VETERINARIA)
-            - Búsqueda de información necesaria: [Sí/No]"""
+            - Búsqueda de información necesaria: [Sí/No]
+            - Consulta refinada: [frase completa con contexto] (solo si búsqueda = Sí)"""
         )
     def db_retrieval_task(self, agent: Agent, context: List[Task]) -> Task:
         """Recover knowledge base data based on triage results"""
         return Task(
-            description="""Basándote en el análisis de triaje, recupera información de la base de conocimientos.
+            description="""Basándote en el análisis del agente de clasificación, recupera información de la base de conocimientos.
 
-            TIENES ACCESO A LA HERRAMIENTA: "Búsqueda en Base de Conocimientos Veterinarios"
+            TIENES ACCESO A LA HERRAMIENTA: "Recuperación de Información de Base de Conocimientos Veterinarios"
+
+            Si el agente de clasificación indica "Búsqueda de información necesaria" = No:
+            - Regresa exactamente: "BÚSQUEDA NO REQUERIDA"
 
             Si el agente de clasificación indica "Búsqueda de información necesaria" = Sí:
-            1. Invoca la herramienta "Búsqueda en Base de Conocimientos Veterinarios"
-            2. Regresa exactamente lo que la herramienta devuelva, sin modificar
+            1. Recupera la "Consulta refinada" del agente de clasificación
+            2. Invoca la herramienta "Recuperación de Información de Base de Conocimientos Veterinarios" utilizando la consulta refinada como argumento. Es importante que utilices la consulta refinada completa, no palabras clave
+            3. Regresa exactamente lo que la herramienta devuelva, sin modificar
 
             Tu único trabajo es invocar la herramienta y pasar sus resultados al siguiente agente.""",
             agent=agent,
-            expected_output="Los resultados exactos devueltos por la herramienta de búsqueda",
+            expected_output="""Uno de los siguientes:
+            - "BÚSQUEDA NO REQUERIDA" (si el agente de clasificación indicó que no se necesita buscar)
+            - Los resultados exactos devueltos por la herramienta de búsqueda""",
             context=context
         )
     
