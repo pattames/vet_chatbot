@@ -60,6 +60,18 @@ class VeterinaryAgents:
             allow_delegation=False
         )
     
+    def quality_control_agent(self) -> Agent:
+        """Agent that verifies response safety and quality"""
+        return Agent(
+            role="Supervisor de Calidad y Seguridad",
+            goal="Verificar que las respuestas sean seguras, precisas y apropiadas a nivel educativo",
+            backstory="""Eres un supervisor de educación veterinaria enfocado en seguridad del paciente.
+            Revisas meticulosamente la información médica para asegurar que sea precisa, segura y apropiada para estudiantes de veterinaria.""",
+            llm=llm,
+            verbose=True,
+            allow_delegation=False
+        )
+    
     def _create_db_retrieval_tool(self):
         """Create tool wrapper for db information retrieval tool"""
         from crewai_tools import tool
@@ -144,7 +156,8 @@ class VeterinaryTasks:
                 - Incluye detalles específicos (dosis, protocolos, valores diagnósticos)
                 - Si es EMERGENCIA, comienza con: ⚠️ EMERGENCIA VETERINARIA
             B) Si NO hay información proveniente de la base de conocimientos:
-                - Comienza con: "⚠️ Información basada en conocimiento general (no verificado en base de conocimientos):"
+                - Comienza con: "⚠️ Información basada en conocimiento general (no verificado en base de conocimientos de la UNAM):"
+                - Evitar dosis específicas a menos de que vengan de fuentes verificadas
                 - Sugiere consultar literatura veterinaria adicional
             Estructura: [Alerta de emergencia si aplica] + Respuesta principal + Detalles
 
@@ -176,3 +189,38 @@ class VeterinaryTasks:
             expected_output="Respuesta completa y apropiada para el tipo de consulta (veterinaria, no veterinaria o de sistema)",
             context=context
         )
+    
+    def quality_check_task(self, agent: Agent, context: List[Task]) -> Task:
+        """Review response for safety, accuracy, and quality"""
+        return Task(
+            description="""Revisa la respuesta y asegura su calidad.
+            
+            PARA CONSULTAS VETERINARIAS:
+            ✓ SEGURIDAD:
+                - Emergencias claramente marcadas con ⚠️ EMERGENCIA VETERINARIA
+                - Dosis/protocolos correctos
+                - NO hay dosis específicas sin fuente verificada
+                - Advertencias apropiadas sobre riesgos
+            ✓ TRANSPARENCIA DE FUENTE:
+                - Información proveniente de la base de conocimientos se usa sin modificar
+                - Información proveniente de conocimiento general marcada con "⚠️ Información basada en conocimiento general (no verificado en base de conocimientos de la UNAM)"
+            ✓ CALIDAD EDUCATIVA:
+                - Terminología médica correcta en español
+                - Explicaciones claras para estudiantes
+            ✓ DISCLAIMER OBLIGATORIO (agregar al final):
+                "📚 Nota Educativa: Esta información es para fines educativos. En la práctica clínica, cada caso debe evaluarse individualmente considerando el historial completo, examen físico y resultados diagnósticos."
+            
+            PARA CONSULTAS DE SISTEMA O FUERA DE ALCANCE:
+                - Verificar tono amigable
+                - NO agregar disclaimer (no es necesario)
+            
+            Si la respuesta original contiene faltas de precisión relacionadas a los puntos anteriores, corrígela antes de aprobar.""",
+            agent=agent,
+            expected_output="""Respuesta final revisada, corregida y aprovada""",
+            context=context
+        )
+
+# ===================================================
+# CREW ORCHESTRATION
+# ===================================================
+    
