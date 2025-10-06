@@ -272,4 +272,34 @@ class VeterinaryCrew:
 # ===================================================
 
 if __name__ == "__main__":
-    test_queries = []
+    test_queries = [
+        # VETERINARIA - In knowledge base
+        "Mi perro comió chocolate hace 1 hora, ¿qué hago?",
+        "¿Cuáles son los síntomas del parvovirus?",
+        "Perro con vómitos y diarrea con sangre, está muy débil",
+
+        # VETERINARIA - NOT in knowledge base
+        "Qué es la leishmaniasis canina",
+
+        # SISTEMA
+        "Hola, ¿qué puedes hacer?",
+        "Tengo dolor de cabeza",
+    ]
+
+    vet_crew = VeterinaryCrew()
+
+    print("\n" + "="*30)
+    print("VETERINARY CHATBOT - TESTING")
+    print("="*30)
+
+    for i, query in enumerate(test_queries, 1):
+        print(f"\n{'='+30}")
+        print(f"TEST {i}/{len(test_queries)}: {query}")
+        print(f"{'='*30}\n")
+
+        try:
+            response = vet_crew.run(query)
+            print(f"\nRESPUESTA:\n{response}\n")
+        except Exception as e:
+            logger.error(f"Error: {str(e)}")
+            print(f"Error: {str(e)}")
