@@ -23,18 +23,50 @@ llm = ChatGroq(
 class VeterinaryAgents:
     """Define all agents for the veterinary chatbot system"""
 
-    def triage_agent(self) -> Agent:
+    def classification_agent(self) -> Agent:
         """Agent that classifies queries and determines search necessity"""
         return Agent(
-            role="Agente de Triaje Veterinario",
-            goal="Clasificar consultas por tipo y urgencia, determinando si requieren búsqueda en base de conocimientos",
-            backstory="""Eres un asistente veterinario experimentado en triaje de emergencias.
+            role="Agente de Clasificación Veterinaria",
+            goal="Clasificar consulta por tipo y urgencia, determinando si para responder a la consulta se requiere de una búsqueda de información",
+            backstory="""Eres un asistente veterinario experimentado en la clasificación de casos.
             Tienes la habilidad de identificar rápidamente el tipo de consulta, su urgencia médica, y determinar qué información se necesita para responder apropiadamente.""",
             llm=llm,
             verbose=True,
             allow_delegation=False
         )
 
+    def db_retrieval_agent(self) -> Agent:
+        """Agent that recovers relevant information from the veterinary knowledge base"""
+        return Agent(
+            role="Especialista en Recuperación de Información",
+            goal="Recuperar información veterinaria relevante proveniente de la base de conocimientos",
+            backstory="""Eres un bibliotecario médico veterinario experto en recuperación de información.
+            Sabes encontrar información precisa sobre enfermedades, tratamientos y protocolos veterinarios, proveniente de la base de conocimientos.""",
+            llm=llm,
+            verbose=True,
+            allow_delegation=False,
+            tools=[self._create_db_retrieval_tool()]
+        )
+    
+    def _create_db_retrieval_tool(self):
+        """Create tool wrapper for db information retrieval tool"""
+        from crewai_tools import tool
+
+        @tool("Recuperación de Información de Base de Conocimientos Veterinarios")
+        def retrieve_db_knowledge(query: str) -> str:
+            """
+            Recupera información veterinaria de la base de conocimientos.
+
+            Args:
+                query: Consulta sobre enfermedades, síntomas, diagnósticos o tratamientos
+
+            Returns:
+                Información relevante de la base de conocimientos
+            """
+            logger.info(f"Retrieving from knowledge base: {query}")
+            return query_diseases(query)
+        
+        return retrieve_db_knowledge
 
 # ===================================================
 # AGENTS DEFINITION
@@ -43,7 +75,7 @@ class VeterinaryAgents:
 class VeterinaryTasks:
     """Define all tasks for the veterinary chatbot workflow"""
 
-    def triage_task(self, agent: Agent, user_query:str) -> Task:
+    def classification_task(self, agent: Agent, user_query:str) -> Task:
         """Classify query type, urgency, and search necessity"""
         return Task(
             description=f"""Analiza esta consulta y clasificala:
@@ -61,15 +93,28 @@ class VeterinaryTasks:
             - CONSULTA: Pregunta general sobre enfermedades, tratamientos, diagnóstico
             - EDUCATIVA: Pregunta teórica o de aprendizaje
 
-            PASO 3 - Determina si se necesita BÚSQUEDA:
-            - Sí: A todas las consultas de tipo VETERINARIAS (siempre buscar información verificada)
-            - No: A consultas de tipo SISTEMA Y FUERA_DE_ALCANCE
-
-            PASO 4 - Si búsqueda = Sí, proporciona TÉRMINOS DE BÚSQUEDA en español (2 - 5 palabras clave)""",
+            PASO 3 - Determina si se necesita BÚSQUEDA de información:
+            - Sí: A todas las consultas de tipo VETERINARIAS
+            - No: A consultas de tipo SISTEMA Y FUERA_DE_ALCANCE""",
             agent=agent,
             expected_output="""Clasificación estructurada:
             - Tipo: [VETERINARIA/SISTEMA/FUERA_DE_ALCANCE]
             - Urgencia: [EMERGENCIA/URGENTE/CONSULTA/EDUCATIVA] (solo si es de tipo VETERINARIA)
-            - Búsqueda necesaria: [Sí/No]
-            - Términos de búsqueda: [términos] (solo si búsqueda = Sí)"""
+            - Búsqueda de información necesaria: [Sí/No]"""
+        )
+    def db_retrieval_task(self, agent: Agent, context: List[Task]) -> Task:
+        """Recover knowledge base data based on triage results"""
+        return Task(
+            description="""Basándote en el análisis de triaje, recupera información de la base de conocimientos.
+
+            TIENES ACCESO A LA HERRAMIENTA: "Búsqueda en Base de Conocimientos Veterinarios"
+
+            Si el agente de clasificación indica "Búsqueda de información necesaria" = Sí:
+            1. Invoca la herramienta "Búsqueda en Base de Conocimientos Veterinarios"
+            2. Regresa exactamente lo que la herramienta devuelva, sin modificar
+
+            Tu único trabajo es invocar la herramienta y pasar sus resultados al siguiente agente.""",
+            agent=agent,
+            expected_output="Los resultados exactos devueltos por la herramienta de búsqueda",
+            context=context
         )
