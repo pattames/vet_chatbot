@@ -373,21 +373,21 @@ if __name__ == "__main__":
 #    print(collection.get())
 
    # Create collection and index chunks
-#    insert_diseases()
+   insert_diseases()
 
    # TESTING QUERIES
-   test_queries = [
-      "¿Qué es el parvovirus canino?",
-      "Perro con vómitos severos y diarrea con sangre",
-      "Perro con picazón intensa en patas y orejas",
-      "Mi perro comió chocolate, ¿es peligroso?",
-      "Emergencia: perro con abdomen hinchado y en shock",
-      "Perro con cojera en pata trasera que no apoya",
-      "Gato adulto con vómitos y mal aliento",
-   ]
+#    test_queries = [
+#       "¿Qué es el parvovirus canino?",
+#       "Perro con vómitos severos y diarrea con sangre",
+#       "Perro con picazón intensa en patas y orejas",
+#       "Mi perro comió chocolate, ¿es peligroso?",
+#       "Emergencia: perro con abdomen hinchado y en shock",
+#       "Perro con cojera en pata trasera que no apoya",
+#       "Gato adulto con vómitos y mal aliento",
+#    ]
 
-   for query in test_queries:
-      print(f"\n{'='*60}")
-      print(f"QUERY: {query}")
-      response = query_diseases(query)
-      print(f"\nRESPONSE:\n{response}\n")
+#    for query in test_queries:
+#       print(f"\n{'='*60}")
+#       print(f"QUERY: {query}")
+#       response = query_diseases(query)
+#       print(f"\nRESPONSE:\n{response}\n")

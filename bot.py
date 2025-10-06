@@ -223,4 +223,53 @@ class VeterinaryTasks:
 # ===================================================
 # CREW ORCHESTRATION
 # ===================================================
+
+class VeterinaryCrew:
+    """Orchestrate the multi-agent veterinary chatbot workflow"""
+
+    def __init__(self):
+        self.agent_manager = VeterinaryAgents()
+        self.task_manager = VeterinaryTasks()
     
+    def run(self, user_query: str) -> str:
+        """
+        Execute the multi-agent workflow for a user query
+
+        Args:
+            user_query: Veterinary question from the user
+        
+        Returns:
+            Final reviewed response
+        """
+        logger.info(f"Processing query: {user_query}")
+
+        # Initialize agents
+        classification_agent = self.agent_manager.classification_agent()
+        db_retrieval_agent = self.agent_manager.db_retrieval_agent()
+        specialist_agent = self.agent_manager.veterinary_specialist_agent()
+        qc_agent = self.agent_manager.quality_control_agent()
+
+        # Create tasks with dependencies
+        classification_task = self.task_manager.classification_task(classification_agent, user_query)
+        db_retrieval_task = self.task_manager.db_retrieval_task(db_retrieval_agent, context=[classification_task])
+        specialist_task = self.task_manager.specialist_response_task(specialist_agent, user_query, context=[classification_task, db_retrieval_task])
+        qc_task = self.task_manager.quality_check_task(qc_agent, context=[specialist_task])
+
+        # Create and run crew
+        crew = Crew(
+            agents=[classification_agent, db_retrieval_agent, specialist_agent, qc_agent],
+            tasks=[classification_task, db_retrieval_task, specialist_task, qc_task],
+            process=Process.sequential,
+            verbose=True
+        )
+
+        result = crew.kickoff()
+        logger.info("Query processing completed")
+        return result
+    
+# ===================================================
+# MAIN EXECUTION (for testing)
+# ===================================================
+
+if __name__ == "__main__":
+    test_queries = []
