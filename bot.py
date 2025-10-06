@@ -310,7 +310,7 @@ if __name__ == "__main__":
     print("="*30)
 
     for i, query in enumerate(test_queries, 1):
-        print(f"\n{'='+30}")
+        print(f"\n{'='*30}")
         print(f"TEST {i}/{len(test_queries)}: {query}")
         print(f"{'='*30}\n")
 
