@@ -54,3 +54,29 @@ def initialize_crew():
     except Exception as e:
         logger.error(f"Error initializing crew: {str(e)}")
         return None
+    
+# Header
+st.title("Asistente Veterinario UNAM 🩺")
+st.caption("Chatbot educativo para estudiantes de medicina veterinaria")
+
+# Sidebar with info
+with st.sidebar:
+    st.header("ℹ️ Información")
+    st.markdown("""
+    **Sobre este asistente:**
+    - Especializado en medicina veterinaria
+    - Información educativa para estudiantes
+    - Basado en base de conocimientos UNAM
+    
+    **Puede ayudarte con:**
+    - Enfermedades y condiciones
+    - Síntomas y diagnósticos
+    - Protocolos de tratamiento
+    - Emergencias veterinarias
+    """)
+
+    st.divider()
+
+    if st.button("🗑️ Limpiar conversación"):
+        st.session_state.messages = []
+        st.rerun()
