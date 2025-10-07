@@ -311,7 +311,7 @@ if __name__ == "__main__":
 
     # Test one query at a time (because of LiteLLM token limitations)
     try:
-        response = vet_crew.run(test_queries[0])
+        response = vet_crew.run("Perro con picazón intensa en patas y orejas")
         print(f"\nRESPUESTA:\n{response}\n")
     except Exception as e:
         logger.error(f"Error: {str(e)}")

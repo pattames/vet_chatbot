@@ -314,7 +314,7 @@ def query_diseases(query: str) -> str:
       # Returns most similar chunks content
       results = collection.query(
          query_texts=[f"query: {query}"], # Used for embedding and search
-         n_results=5, # Return top 5 results, even if not relevant (adjustable)
+         n_results=10, # Return top 10 results, even if not relevant (adjustable)
          include=["metadatas", "distances"] # Used for retrieval (id's by default, metadatas and distances)
       )
 
@@ -323,7 +323,7 @@ def query_diseases(query: str) -> str:
          return "No relevant diseases found."
       
       # Log all results
-      logger.info(f"Top 5 results:")
+      logger.info(f"Top 10 results:")
       for i, (metadata, distance) in enumerate(zip(results["metadatas"][0], results["distances"][0])):
          chunk_id = metadata.get("chunk_id", "unknown")
          chunk_disease = metadata.get("chunk_disease", "unknown")
