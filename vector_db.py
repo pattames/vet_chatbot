@@ -314,7 +314,7 @@ def query_diseases(query: str) -> str:
       # Returns most similar chunks content
       results = collection.query(
          query_texts=[f"query: {query}"], # Used for embedding and search
-         n_results=5, # Return top 5 results, even if not relevant (adjustable)
+         n_results=10, # Return top 10 results, even if not relevant (adjustable)
          include=["metadatas", "distances"] # Used for retrieval (id's by default, metadatas and distances)
       )
 
@@ -323,7 +323,7 @@ def query_diseases(query: str) -> str:
          return "No relevant diseases found."
       
       # Log all results
-      logger.info(f"Top 5 results:")
+      logger.info(f"Top 10 results:")
       for i, (metadata, distance) in enumerate(zip(results["metadatas"][0], results["distances"][0])):
          chunk_id = metadata.get("chunk_id", "unknown")
          chunk_disease = metadata.get("chunk_disease", "unknown")
@@ -373,21 +373,21 @@ if __name__ == "__main__":
 #    print(collection.get())
 
    # Create collection and index chunks
-#    insert_diseases()
+   insert_diseases()
 
    # TESTING QUERIES
-   test_queries = [
-      "¿Qué es el parvovirus canino?",
-      "Perro con vómitos severos y diarrea con sangre",
-      "Perro con picazón intensa en patas y orejas",
-      "Mi perro comió chocolate, ¿es peligroso?",
-      "Emergencia: perro con abdomen hinchado y en shock",
-      "Perro con cojera en pata trasera que no apoya",
-      "Gato adulto con vómitos y mal aliento",
-   ]
+#    test_queries = [
+#       "¿Qué es el parvovirus canino?",
+#       "Perro con vómitos severos y diarrea con sangre",
+#       "Perro con picazón intensa en patas y orejas",
+#       "Mi perro comió chocolate, ¿es peligroso?",
+#       "Emergencia: perro con abdomen hinchado y en shock",
+#       "Perro con cojera en pata trasera que no apoya",
+#       "Gato adulto con vómitos y mal aliento",
+#    ]
 
-   for query in test_queries:
-      print(f"\n{'='*60}")
-      print(f"QUERY: {query}")
-      response = query_diseases(query)
-      print(f"\nRESPONSE:\n{response}\n")
+#    for query in test_queries:
+#       print(f"\n{'='*60}")
+#       print(f"QUERY: {query}")
+#       response = query_diseases(query)
+#       print(f"\nRESPONSE:\n{response}\n")
