@@ -168,3 +168,10 @@ if prompt := st.chat_input("Escribe tu consulta veterinaria..."):
                 logger.error(f"Error processing query: {error_message}")
 
 # Footer
+st.divider()
+st.markdown("""
+<div style='text-align: center; color: #666; font-size: 0.8rem;'>
+    <p>🎓 Asistente Veterinario UNAM - Prototipo Educativo</p>
+    <p>La información proporcionada es para fines educativos únicamente</p>
+</div>
+""", unsafe_allow_html=True)
