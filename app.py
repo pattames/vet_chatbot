@@ -97,3 +97,8 @@ if st.session_state.crew is None:
         if st.session_state.crew is None:
             st.error("❌ Error al inicializar el sistema. Por favor, verifica tu configuración.")
             st.stop()
+
+# Display chat messages
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
