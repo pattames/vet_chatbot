@@ -74,7 +74,7 @@ class VeterinaryAgents:
     
     def _create_db_retrieval_tool(self):
         """Create tool wrapper for db information retrieval tool"""
-        from crewai_tools import tool
+        from langchain.tools import tool
 
         @tool("Recuperación de Información de Base de Conocimientos Veterinarios")
         def retrieve_db_knowledge(query: str) -> str:
