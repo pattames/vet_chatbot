@@ -89,3 +89,11 @@ with st.sidebar:
     Si ves un mensaje de error, espera unos segundos e intenta de nuevo.
     </div>
     """, unsafe_allow_html=True)
+
+# Initialize crew if not already done
+if st.session_state.crew is None:
+    with st.spinner("Inicializando sistema..."):
+        st.session_state.crew = initialize_crew()
+        if st.session_state.crew is None:
+            st.error("❌ Error al inicializar el sistema. Por favor, verifica tu configuración.")
+            st.stop()
