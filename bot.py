@@ -74,24 +74,24 @@ class VeterinaryAgents:
     
     def _create_db_retrieval_tool(self):
         """Create tool wrapper for db information retrieval tool"""
-        from langchain.tools import tool
+        from crewai.tools import BaseTool
+        from typing import Type
+        from pydantic import BaseModel, Field
 
-        @tool("Recuperación de Información de Base de Conocimientos Veterinarios")
-        def retrieve_db_knowledge(query: str) -> str:
-            """
-            Recupera información veterinaria de la base de conocimientos.
+        class SearchInput(BaseModel):
+            """Input schema for knowledge base search"""
+            query: str = Field(..., description="Consulta refinada sobre enfermedades, síntomas, diagnósticos o tratamientos veterinarios")
 
-            Args:
-                query: Consulta sobre enfermedades, síntomas, diagnósticos o tratamientos
+        class DbRetrievalTool(BaseTool):
+            name: str = "Recuperación de Información de Base de Conocimientos Veterinarios"
+            description: str = "Recuperación de información veterinaria relevante proveniente de la base de conocimientos"
+            args_schema: Type[BaseModel] = SearchInput
 
-            Returns:
-                Información relevante de la base de conocimientos
-            """
-            logger.info(f"Retrieving from knowledge base: {query}")
-            return query_diseases(query)
-        
-        return retrieve_db_knowledge
-
+            def _run(self, query: str) -> str:
+                return query_diseases(query)
+            
+        return DbRetrievalTool()
+            
 # ===================================================
 # AGENTS DEFINITION
 # ===================================================
