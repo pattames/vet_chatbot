@@ -309,14 +309,24 @@ if __name__ == "__main__":
     print("VETERINARY CHATBOT - TESTING")
     print("="*30)
 
-    for i, query in enumerate(test_queries, 1):
-        print(f"\n{'='*30}")
-        print(f"TEST {i}/{len(test_queries)}: {query}")
-        print(f"{'='*30}\n")
+    # Test one query at a time (because of LiteLLM token limitations)
+    try:
+        response = vet_crew.run(test_queries[0])
+        print(f"\nRESPUESTA:\n{response}\n")
+    except Exception as e:
+        logger.error(f"Error: {str(e)}")
+        print(f"Error: {str(e)}")
 
-        try:
-            response = vet_crew.run(query)
-            print(f"\nRESPUESTA:\n{response}\n")
-        except Exception as e:
-            logger.error(f"Error: {str(e)}")
-            print(f"Error: {str(e)}")
+    
+    # Test all queries at the same time (not possible with LiteLLM)
+    # for i, query in enumerate(test_queries, 1):
+    #     print(f"\n{'='*30}")
+    #     print(f"TEST {i}/{len(test_queries)}: {query}")
+    #     print(f"{'='*30}\n")
+
+    #     try:
+    #         response = vet_crew.run(query)
+    #         print(f"\nRESPUESTA:\n{response}\n")
+    #     except Exception as e:
+    #         logger.error(f"Error: {str(e)}")
+    #         print(f"Error: {str(e)}")
