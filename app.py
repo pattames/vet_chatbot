@@ -80,3 +80,12 @@ with st.sidebar:
     if st.button("🗑️ Limpiar conversación"):
         st.session_state.messages = []
         st.rerun()
+    
+    st.divider()
+
+    st.markdown("""
+    <div style='font-size: 0.8rem; color: #666;'>
+    <strong>Nota:</strong> Este prototipo tiene límites de tokens por minuto. 
+    Si ves un mensaje de error, espera unos segundos e intenta de nuevo.
+    </div>
+    """, unsafe_allow_html=True)
