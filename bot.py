@@ -212,26 +212,22 @@ class VeterinaryTasks:
         return Task(
             description="""Revisa la respuesta y asegura su calidad.
             
-            PARA CONSULTAS VETERINARIAS:
-            ✓ SEGURIDAD:
+            Únicamente para respuestas a consultas de tipo VETERINARIAS verifica los siguientes puntos:
+            - SEGURIDAD:
                 - Emergencias claramente marcadas con ⚠️ EMERGENCIA VETERINARIA
                 - Dosis/protocolos correctos
                 - NO hay dosis específicas sin fuente verificada
                 - Advertencias apropiadas sobre riesgos
-            ✓ TRANSPARENCIA DE FUENTE:
+            - TRANSPARENCIA DE FUENTE:
                 - Información proveniente de la base de conocimientos se usa sin modificar
                 - Información proveniente de conocimiento general marcada con "⚠️ Información basada en conocimiento general (no verificado en base de conocimientos de la UNAM)"
-            ✓ CALIDAD EDUCATIVA:
+            - CALIDAD EDUCATIVA:
                 - Terminología médica correcta en español
                 - Explicaciones claras para estudiantes
-            ✓ DISCLAIMER OBLIGATORIO (agregar al final):
+            - DISCLAIMER OBLIGATORIO (agregar al final):
                 "📚 Nota Educativa: Esta información es para fines educativos. En la práctica clínica, cada caso debe evaluarse individualmente considerando el historial completo, examen físico y resultados diagnósticos."
             
-            PARA CONSULTAS DE SISTEMA O FUERA DE ALCANCE:
-                - Verificar tono amigable
-                - NO agregar disclaimer (no es necesario)
-            
-            Si la respuesta original contiene faltas de precisión relacionadas a los puntos anteriores, corrígela antes de aprobar.""",
+            Para respuestas a consultas de SISTEMA o FUERA DE ALCANCE no es necesario verificar, pasa la respuesta original tal cual y no agregues el disclaimer obligatorio.""",
             agent=agent,
             expected_output="""Respuesta final revisada, corregida y aprovada""",
             context=context
@@ -270,7 +266,7 @@ class VeterinaryCrew:
         classification_task = self.task_manager.classification_task(classification_agent, user_query)
         db_retrieval_task = self.task_manager.db_retrieval_task(db_retrieval_agent, context=[classification_task])
         specialist_task = self.task_manager.specialist_response_task(specialist_agent, user_query, context=[classification_task, db_retrieval_task])
-        qc_task = self.task_manager.quality_check_task(qc_agent, context=[specialist_task])
+        qc_task = self.task_manager.quality_check_task(qc_agent, context=[classification_task, specialist_task])
 
         # Create and run crew
         crew = Crew(
@@ -311,7 +307,7 @@ if __name__ == "__main__":
 
     # Test one query at a time (because of LiteLLM token limitations)
     try:
-        response = vet_crew.run("Perro con picazón intensa en patas y orejas")
+        response = vet_crew.run("Hola")
         print(f"\nRESPUESTA:\n{response}\n")
     except Exception as e:
         logger.error(f"Error: {str(e)}")
