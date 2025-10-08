@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 # Page configuration
 st.set_page_config(
-    page_title="Assistente Veterinario UNAM",
+    page_title="Asistente Veterinario UNAM",
     page_icon="🩺",
     layout="centered"
 )
