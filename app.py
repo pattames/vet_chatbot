@@ -155,7 +155,7 @@ if prompt := st.chat_input("Escribe tu consulta veterinaria..."):
                         <p>El sistema ha alcanzado el límite de tokens/solicitudes por día.</p>
                         <p><strong>Por favor, intenta de nuevo el día de mañana.</strong></p>
                         <p style='font-size: 0.85rem; margin-top: 0.5rem;'>
-                        Esto es una limitación del servicio gratuito de Groq.
+                        Esto es una limitación temporal debido a la fase prototípica.
                         </p>
                     </div>
                     """, unsafe_allow_html=True)
@@ -166,7 +166,7 @@ if prompt := st.chat_input("Escribe tu consulta veterinaria..."):
                         <p>El sistema ha alcanzado el límite de tokens/solicitudes por minuto.</p>
                         <p><strong>Por favor, espera 30-60 segundos e intenta de nuevo.</strong></p>
                         <p style='font-size: 0.85rem; margin-top: 0.5rem;'>
-                        Esto es una limitación temporal del servicio gratuito de Groq.
+                        Esto es una limitación temporal debido a la fase prototípica.
                         </p>
                     </div>
                     """, unsafe_allow_html=True)
