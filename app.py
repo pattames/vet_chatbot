@@ -85,8 +85,8 @@ with st.sidebar:
 
     st.markdown("""
     <div style='font-size: 0.8rem; color: #666;'>
-    <strong>Nota:</strong> Este prototipo tiene límites de tokens por minuto. 
-    Si ves un mensaje de error, espera unos segundos e intenta de nuevo.
+    <strong>Nota:</strong> Este prototipo tiene límites de tokens/solicitudes por minuto. 
+    Si ves un mensaje de error, espera el tiempo indicado para poder volver a utilizar el chat.
     </div>
     """, unsafe_allow_html=True)
 
@@ -144,7 +144,7 @@ if prompt := st.chat_input("Escribe tu consulta veterinaria..."):
                 st.markdown("""
                 <div class="error-box">
                     <strong>⚠️ Límite de tokens alcanzado</strong>
-                    <p>El sistema ha alcanzado el límite de tokens por minuto de Groq.</p>
+                    <p>El sistema ha alcanzado el límite de tokens por minuto.</p>
                     <p><strong>Por favor, espera 30-60 segundos e intenta de nuevo.</strong></p>
                     <p style='font-size: 0.85rem; margin-top: 0.5rem;'>
                     Esto es una limitación temporal debido a que el chatbot se encuentra en fase de prototipo.
