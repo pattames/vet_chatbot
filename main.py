@@ -207,7 +207,9 @@ class VeterinaryTasks:
     def quality_check_task(self, agent: Agent, context: List[Task]) -> Task:
         """Review response for safety, accuracy, and quality"""
         return Task(
-            description="""Revisa la respuesta y asegura su calidad.
+            description="""Revisa la respuesta del Veterinario Clínico Educador y asegura su calidad.
+            
+            IMPORTANTE: Tu respuesta final debe contener ÚNICAMENTE la respuesta del Veterinario Clínico Educador (con modificaciones solo si es necesario). NO incluyas información de clasificación ni análisis de otros agentes.
             
             Únicamente para respuestas a consultas de tipo VETERINARIAS verifica los siguientes puntos:
             - SEGURIDAD:
@@ -224,11 +226,14 @@ class VeterinaryTasks:
             - DISCLAIMER OBLIGATORIO (agregar al final):
                 "📚 Nota Educativa: Esta información es para fines educativos. En la práctica clínica, cada caso debe evaluarse individualmente considerando el historial completo, examen físico y resultados diagnósticos."
             
-            Para respuestas a consultas de SISTEMA o FUERA DE ALCANCE no es necesario verificar, pasa la respuesta original tal cual y no agregues el disclaimer obligatorio.""",
+            Para respuestas a consultas de tipo SISTEMA o tipo FUERA_DE_ALCANCE:
+            - NO hagas cambios
+            - NO agregues el disclaimer
+            - Regresa ÚNICAMENTE la respuesta del Veterinario Clínico Educador, sin agregar información de clasificación ni de otros agentes.""",
             agent=agent,
-            expected_output="""Respuesta final revisada, corregida y aprovada""",
+            expected_output="""ÚNICAMENTE la respuesta del Veterinario Clínico Educador (revisada y corregida si es tipo VETERINARIA, o sin cambios si es tipo SISTEMA o FUERA_DE_ALCANCE). NO incluyas información de clasificación.""",
             context=context
-        )
+    )
 
 # ===================================================
 # CREW ORCHESTRATION
@@ -303,7 +308,7 @@ if __name__ == "__main__":
 
     # Test one query at a time (because of LiteLLM token limitations)
     try:
-        response = vet_crew.run("Qué es la leishmaniasis canina")
+        response = vet_crew.run("Hola")
         print(f"\nRESPUESTA:\n{response}\n")
     except Exception as e:
         logger.error(f"Error: {str(e)}")
