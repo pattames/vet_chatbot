@@ -1,6 +1,6 @@
 import streamlit as st
 import os
-from bot import VeterinaryCrew
+from main import VeterinaryCrew
 import logging
 
 # Configure logging
@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 # Page configuration
 st.set_page_config(
-    page_title="Assistente Veterinario UNAM",
+    page_title="Asistente Veterinario UNAM",
     page_icon="🩺",
     layout="centered"
 )
@@ -44,6 +44,12 @@ if "messages" not in st.session_state:
 
 if "crew" not in st.session_state:
     st.session_state.crew = None
+
+# To check if the token/request error is a daily limit
+def is_daily_limit(error_message: str) -> bool:
+    """Check if the error is a daily limit (TPD/RPD) vs minute limit (TPM/RPM)"""
+    error_lower = error_message.lower()
+    return any(keyword in error_lower for keyword in ["per day", "daily", "tpd", "rpd"])
 
 # Initialize VeterinaryCrew
 @st.cache_resource
@@ -85,8 +91,8 @@ with st.sidebar:
 
     st.markdown("""
     <div style='font-size: 0.8rem; color: #666;'>
-    <strong>Nota:</strong> Este prototipo tiene límites de tokens por minuto. 
-    Si ves un mensaje de error, espera unos segundos e intenta de nuevo.
+    <strong>Nota:</strong> Este prototipo tiene límites de tokens/solicitudes por minuto. 
+    Si ves un mensaje de error, espera el tiempo indicado para poder volver a utilizar el chat.
     </div>
     """, unsafe_allow_html=True)
 
@@ -139,20 +145,33 @@ if prompt := st.chat_input("Escribe tu consulta veterinaria..."):
         except Exception as e:
             error_message = str(e)
 
-            #Check for token limit errors
-            if any(keyword in error_message.lower() for keyword in ["rate limit", "token", "quota", "429"]):
-                st.markdown("""
-                <div class="error-box">
-                    <strong>⚠️ Límite de tokens alcanzado</strong>
-                    <p>El sistema ha alcanzado el límite de tokens por minuto de Groq.</p>
-                    <p><strong>Por favor, espera 30-60 segundos e intenta de nuevo.</strong></p>
-                    <p style='font-size: 0.85rem; margin-top: 0.5rem;'>
-                    Esto es una limitación temporal debido a que el chatbot se encuentra en fase de prototipo.
-                    </p>
-                </div>
-                """, unsafe_allow_html=True)
-
-                logger.warning(f"Token limit reached: {error_message}")
+            # Check for rate limit errors
+            if any(keyword in error_message.lower() for keyword in ["rate limit", "token", "quota", "429", "rpm", "tpm", "rpd", "tpd"]):
+                # Determine if it's a daily or minute limit
+                if is_daily_limit(error_message):
+                    st.markdown("""
+                    <div class="error-box">
+                        <strong>⚠️ Límite alcanzado</strong>
+                        <p>El sistema ha alcanzado el límite de tokens/solicitudes por día.</p>
+                        <p><strong>Por favor, intenta de nuevo el día de mañana.</strong></p>
+                        <p style='font-size: 0.85rem; margin-top: 0.5rem;'>
+                        Esto es una limitación temporal debido a la fase prototípica.
+                        </p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                else:
+                    st.markdown("""
+                    <div class="error-box">
+                        <strong>⚠️ Límite alcanzado</strong>
+                        <p>El sistema ha alcanzado el límite de tokens/solicitudes por minuto.</p>
+                        <p><strong>Por favor, espera 30-60 segundos e intenta de nuevo.</strong></p>
+                        <p style='font-size: 0.85rem; margin-top: 0.5rem;'>
+                        Esto es una limitación temporal debido a la fase prototípica.
+                        </p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                logger.warning(f"Rate limit reached: {error_message}")
             else:
                 # Generic error
                 st.markdown(f"""
