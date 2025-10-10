@@ -129,7 +129,7 @@ class VeterinaryTasks:
             agent=agent,
             expected_output="""Clasificación estructurada:
             - Tipo: [VETERINARIA/SISTEMA/FUERA_DE_ALCANCE]
-            - Urgencia: [EMERGENCIA/URGENTE/CONSULTA/EDUCATIVA] (solo si es de tipo VETERINARIA)
+            - Urgencia: [EMERGENCIA/NO_EMERGENCIA] (solo si es de tipo VETERINARIA)
             - Búsqueda de información necesaria: [Sí/No]
             - Consulta refinada: [frase completa con contexto] (solo si búsqueda = Sí)"""
         )
