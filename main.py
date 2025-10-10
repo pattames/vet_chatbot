@@ -110,10 +110,8 @@ class VeterinaryTasks:
             - FUERA_DE_ALCANCE: Temas no veterinarios (cocina, deportes, medicina humana, etc.)
 
             PASO 2 - Si es de tipo VETERINARIA, determina URGENCIA:
-            - EMERGENCIA: Riesgo de vida (shock, convulsiones, hemorragia severa, dificultad respiratoria)
-            - URGENTE: Requiere atención pronta (vómitos persistentes, diarrea severa, dolor intenso)
-            - CONSULTA: Pregunta general sobre enfermedades, tratamientos, diagnóstico
-            - EDUCATIVA: Pregunta teórica o de aprendizaje
+            - EMERGENCIA: Riesgo de vida inmediato (shock, convulsiones, hemorragia severa, dificultad respiratoria severa, intoxicaciones, etc.)
+            - NO_EMERGENCIA: Todas las demás consultas veterinarias
 
             PASO 3 - Determina si se necesita BÚSQUEDA de información:
             - Sí: A todas las consultas de tipo VETERINARIAS
