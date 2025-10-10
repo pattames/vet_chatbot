@@ -1,6 +1,6 @@
 import streamlit as st
 import os
-from bot import VeterinaryCrew
+from main import VeterinaryCrew
 import logging
 
 # Configure logging

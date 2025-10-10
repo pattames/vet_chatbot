@@ -19,7 +19,6 @@ llm = ChatGroq(
 # ===================================================
 # AGENTS DEFINITION
 # ===================================================
-
 class VeterinaryAgents:
     """Define all agents for the veterinary chatbot system"""
 
@@ -95,7 +94,6 @@ class VeterinaryAgents:
 # ===================================================
 # AGENTS DEFINITION
 # ===================================================
-
 class VeterinaryTasks:
     """Define all tasks for the veterinary chatbot workflow"""
 
@@ -137,6 +135,7 @@ class VeterinaryTasks:
             - Búsqueda de información necesaria: [Sí/No]
             - Consulta refinada: [frase completa con contexto] (solo si búsqueda = Sí)"""
         )
+
     def db_retrieval_task(self, agent: Agent, context: List[Task]) -> Task:
         """Recover knowledge base data based on triage results"""
         return Task(
@@ -236,7 +235,6 @@ class VeterinaryTasks:
 # ===================================================
 # CREW ORCHESTRATION
 # ===================================================
-
 class VeterinaryCrew:
     """Orchestrate the multi-agent veterinary chatbot workflow"""
 
