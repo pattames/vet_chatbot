@@ -180,10 +180,15 @@ class VeterinaryTasks:
                 "¡Hola! Soy tu asistente de aprendizaje en medicina veterinaria 🩺.
 
                 Puedo ayudarte con:
+
                 • Enfermedades y condiciones veterinarias
+
                 • Síntomas y diagnósticos
+
                 • Protocolos de tratamiento
+
                 • Emergencias veterinarias
+
                 • Procedimientos y anestesia
 
                 ¿En qué tema veterinario te gustaría que te ayude?"
@@ -193,8 +198,8 @@ class VeterinaryTasks:
 
             TIPO 3: CONSULTAS FUERA DE ALCANCE
             "Soy un asistente especializado en medicina veterinaria.
-            
-            Puedo ayudarte con preguntas sobre enfermedades, síntomas, diagnósticos y tratamientos veterinarios, pero no puedo asistir con [mención breve del tema].
+
+            Puedo ayudarte con preguntas sobre enfermedades, síntomas, diagnósticos y tratamientos veterinarios, pero no puedo asistir con otros temas.
 
             Tienes alguna consulta veterinaria en la que pueda ayudarte?"
 
@@ -208,8 +213,6 @@ class VeterinaryTasks:
         """Review response for safety, accuracy, and quality"""
         return Task(
             description="""Revisa la respuesta del Veterinario Clínico Educador y asegura su calidad.
-            
-            IMPORTANTE: Tu respuesta final debe contener ÚNICAMENTE la respuesta del Veterinario Clínico Educador (con modificaciones solo si es necesario). NO incluyas información de clasificación ni análisis de otros agentes.
             
             Únicamente para respuestas a consultas de tipo VETERINARIAS verifica los siguientes puntos:
             - SEGURIDAD:
@@ -227,7 +230,7 @@ class VeterinaryTasks:
                 "📚 Nota Educativa: Esta información es para fines educativos. En la práctica clínica, cada caso debe evaluarse individualmente considerando el historial completo, examen físico y resultados diagnósticos."
             
             Para respuestas a consultas de tipo SISTEMA o tipo FUERA_DE_ALCANCE:
-            - NO hagas cambios
+            - NO hagas ningún tipo de alteración de formato o contenido
             - NO agregues el disclaimer
             - Regresa ÚNICAMENTE la respuesta del Veterinario Clínico Educador, sin agregar información de clasificación ni de otros agentes.""",
             agent=agent,
@@ -269,10 +272,10 @@ class VeterinaryCrew:
         specialist_task = self.task_manager.specialist_response_task(specialist_agent, user_query, context=[classification_task, db_retrieval_task])
         qc_task = self.task_manager.quality_check_task(qc_agent, context=[classification_task, specialist_task])
 
-        # Create and run crew
+        # Create and run crew (temporarily removing QC to test formatting)
         crew = Crew(
-            agents=[classification_agent, db_retrieval_agent, specialist_agent, qc_agent],
-            tasks=[classification_task, db_retrieval_task, specialist_task, qc_task],
+            agents=[classification_agent, db_retrieval_agent, specialist_agent],
+            tasks=[classification_task, db_retrieval_task, specialist_task],
             process=Process.sequential,
             verbose=True
         )
