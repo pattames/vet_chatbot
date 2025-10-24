@@ -168,9 +168,9 @@ class VeterinaryTasks:
             A) Si hay información proveniente de la base de conocimientos:
                 - Úsala como fuente principal
                 - Incluye detalles específicos (dosis, protocolos, valores diagnósticos)
-                - Si es EMERGENCIA, comienza con: ⚠️ EMERGENCIA VETERINARIA
+                - Si es EMERGENCIA, comienza con: "⚠️ EMERGENCIA VETERINARIA:\n\n"
             B) Si NO hay información proveniente de la base de conocimientos:
-                - Comienza con: "⚠️ Información basada en conocimiento general (no verificado en base de conocimientos de la UNAM):"
+                - Comienza con: "⚠️ Información basada en conocimiento general (no verificado en base de conocimientos de la UNAM):\n\n"
                 - Evitar dosis específicas a menos de que vengan de fuentes verificadas
                 - Sugiere consultar literatura veterinaria adicional
             Estructura: [Alerta de emergencia si aplica] + Respuesta principal + Detalles
