@@ -1,6 +1,6 @@
 # Veterinary AI Assistant
 
-Multi-agent chatbot using CrewAI, FastAPI, and Streamlit.
+Multi-agent chatbot using CrewAI and Streamlit with RAG (Retrieval Augmented Generation).
 
 ## Prerequisites
 
@@ -71,16 +71,22 @@ Multi-agent chatbot using CrewAI, FastAPI, and Streamlit.
 
 ```
 vet_chatbot/
-├── menv/              # Virtual environment (git-ignored)
-├── vector_db/         # ChromaDB storage (auto-created)
-├── vector_db.py       # Database initialization
-├── main.py            # Multi-agent implementation
-├── app.py             # Streamlit frontend
-├── requirements.txt   # Python dependencies
-├── .env               # Environment variables (copy from .env.example)
-├── .env.example       # Environment variables template
-├── .gitignore         # Git ignore rules
-└── README.md          # This file
+├── .streamlit/
+│   └── config.toml           # Streamlit optional configuration for deployment
+├── menv/                     # Virtual environment (git-ignored)
+├── vector_db/                # ChromaDB storage (auto-created)
+├── __pycache__/              # Python bytecode cache (auto-generated)
+├── app.py                    # Streamlit frontend
+├── main.py                   # Multi-agent implementation (CrewAI)
+├── vector_db.py              # Vector database initialization
+├── requirements.txt          # All Python dependencies (for local dev)
+├── requirements-streamlit.txt # Only essential dependencies for Streamlit deployment
+├── packages.txt              # System dependencies for compiling Python packages (Streamlit Cloud Format)
+├── .env                      # Environment variables (git-ignored)
+├── .env.example              # Environment variables template
+├── .gitignore                # Git ignore rules
+├── README.md                 # This file
+└── DEPLOYMENT.md             # Deployment guide for Streamlit Cloud
 ```
 
 ## Files Auto-Generated During Use
@@ -96,8 +102,13 @@ When done working on the project:
 deactivate
 ```
 
+## Deployment
+
+To deploy this application to Streamlit Community Cloud or other platforms, see the detailed guide in [DEPLOYMENT.md](DEPLOYMENT.md).
+
 ## Troubleshooting
 
 - If you encounter module import errors, ensure the virtual environment is activated
 - For "command not found" errors, verify all dependencies are installed
 - Check that Python version is 3.11.5 or higher: `python --version`
+- For deployment issues, see [DEPLOYMENT.md](DEPLOYMENT.md)
