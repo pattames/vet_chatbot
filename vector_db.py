@@ -295,7 +295,7 @@ def insert_diseases():
 
          collection.add(
             ids=[chunk_key],
-            documents=[f"passage: {chunk_data["content"]}"], # Used for embedding and search
+            documents=[f"passage: {chunk_data['content']}"], # Used for embedding and search
             metadatas=[{"chunk_id": chunk_key, "chunk_content": chunk_data["content"], "chunk_category": chunk_data["category"], "chunk_disease": chunk_data["disease"]}] # Used for retrieval
          )
          logger.info(f"Stored: {chunk_key} → {chunk_data['content'][:50]}...")
