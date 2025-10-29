@@ -1,9 +1,6 @@
 # Core AI/ML frameworks
-anthropic==0.69.0
 crewai==0.201.0
 crewai-tools==0.75.0
-groq==0.32.0
-openai==1.109.1
 
 # LangChain
 langchain==0.3.27
@@ -19,10 +16,8 @@ sentence-transformers==5.1.1
 
 # Web Framework
 streamlit==1.50.0
-fastapi==0.117.1
-uvicorn==0.37.0
 
-# Document Processing (lightweight)
+# Document Processing
 pdfplumber==0.11.7
 pypdf==6.1.1
 python-docx==1.2.0
@@ -39,5 +34,5 @@ pydantic-settings==2.11.0
 requests==2.32.5
 instructor==1.11.3
 
-# Note: PyTorch and CUDA libraries removed - Streamlit Cloud may struggle with these
-# The sentence-transformers will download a CPU-compatible version automatically
+# Note: groq, openai will be installed as dependencies of langchain-groq and crewai
+# PyTorch and CUDA libraries removed - sentence-transformers will download CPU version automatically

@@ -36,7 +36,7 @@ Multi-agent chatbot using CrewAI and Streamlit with RAG (Retrieval Augmented Gen
 4. **Install dependencies:**
 
    ```bash
-   pip install -r requirements-dev.txt
+   pip install -r requirements.txt
    ```
 
 5. **Create environment variables file:**
@@ -71,19 +71,16 @@ Multi-agent chatbot using CrewAI and Streamlit with RAG (Retrieval Augmented Gen
 
 ```
 vet_chatbot/
-├── .streamlit/
-│   └── config.toml           # Streamlit optional configuration for deployment
 ├── menv/                     # Virtual environment (git-ignored)
 ├── vector_db/                # ChromaDB storage (auto-created)
 ├── __pycache__/              # Python bytecode cache (auto-generated)
 ├── app.py                    # Streamlit frontend
 ├── main.py                   # Multi-agent implementation (CrewAI)
 ├── vector_db.py              # Vector database initialization
-├── requirements-dev.txt      # All Python dependencies (for local dev)
-├── requirements-streamlit.txt # Only essential dependencies for Streamlit deployment (excluiding GPU ones)
-├── packages.txt              # System dependencies for compiling Python packages (Streamlit Cloud Format)
+├── requirements.txt          # All Python dependencies
 ├── .env                      # Environment variables (git-ignored)
 ├── .env.example              # Environment variables template
+├── render.yaml               # Render deployment file
 ├── .gitignore                # Git ignore rules
 └── README.md                 # This file
 ```
