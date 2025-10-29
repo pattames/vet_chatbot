@@ -2,4 +2,5 @@ menv/
 .env
 __pycache__/
 vector_db/
-*.json
+*.pyc
+*.swp

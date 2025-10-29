@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: vet-chatbot
+    env: python
+    buildCommand: "pip install -r requirements.txt && python vector_db.py"
+    startCommand: "streamlit run app.py --server.port=$PORT --server.address=0.0.0.0"
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false  # You'll set this manually in Render dashboard
+      - key: PYTHON_VERSION
+        value: 3.11.5
