@@ -80,7 +80,6 @@ vet_chatbot/
 ├── requirements.txt          # All Python dependencies
 ├── .env                      # Environment variables (git-ignored)
 ├── .env.example              # Environment variables template
-├── render.yaml               # Render deployment file
 ├── .gitignore                # Git ignore rules
 └── README.md                 # This file
 ```
