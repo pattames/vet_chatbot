@@ -36,7 +36,7 @@ Multi-agent chatbot using CrewAI and Streamlit with RAG (Retrieval Augmented Gen
 4. **Install dependencies:**
 
    ```bash
-   pip install -r requirements.txt
+   pip install -r requirements.txt -r requirements-dev.txt
    ```
 
 5. **Create environment variables file:**
